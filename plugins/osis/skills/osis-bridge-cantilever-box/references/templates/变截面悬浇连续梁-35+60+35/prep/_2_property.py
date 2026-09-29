@@ -1,0 +1,78 @@
+"""OSIS 命令流 PROPERTY 模块 — 几何属性(坐标系、收缩徐变特性、钢束线型等)"""
+
+from __future__ import annotations
+
+from pyosis import batch
+
+from pyosis.core.engine import OSISEngine
+
+def build_property(engine: OSISEngine) -> None:
+    # 创建样条曲线（便捷入口，内部转发到对应 create_* 方法）
+    engine.geometry.create_arc2d("BB3-y_HorCurve", "TENDON", [0.15, 0.0, 0.0, 22.73, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB3-y_VerCurve", "TENDON", [0.15, -2.25236, 0.0, 1.78681, -2.60028, 8.0, 21.4611, -2.04, 8.0, 22.73, -1.7, 0.0])
+    engine.geometry.create_arc2d("BB3-z_HorCurve", "TENDON", [0.15, 0.0, 0.0, 22.73, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB3-z_VerCurve", "TENDON", [0.15, -1.7, 0.0, 1.4189, -2.04, 8.0, 21.0932, -2.60028, 8.0, 22.73, -2.25236, 0.0])
+    engine.geometry.create_arc2d("BB4-y_HorCurve", "TENDON", [0.15, 0.0, 0.0, 18.73, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB4-y_VerCurve", "TENDON", [0.15, -2.00225, 0.0, 1.78123, -2.34898, 8.0, 17.4611, -2.04, 8.0, 18.73, -1.7, 0.0])
+    engine.geometry.create_arc2d("BB4-z_HorCurve", "TENDON", [0.15, 0.0, 0.0, 18.73, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB4-z_VerCurve", "TENDON", [0.15, -1.7, 0.0, 1.4189, -2.04, 8.0, 17.0988, -2.34898, 8.0, 18.73, -2.00225, 0.0])
+    engine.geometry.create_arc2d("BB5-y_HorCurve", "TENDON", [0.15, 0.0, 0.0, 14.73, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB5-y_VerCurve", "TENDON", [0.15, -1.81883, 0.0, 1.8221, -2.17425, 8.0, 13.4611, -2.04, 8.0, 14.73, -1.7, 0.0])
+    engine.geometry.create_arc2d("BB5-z_HorCurve", "TENDON", [0.15, 0.0, 0.0, 14.73, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB5-z_VerCurve", "TENDON", [0.15, -1.7, 0.0, 1.4189, -2.04, 8.0, 13.0579, -2.17425, 8.0, 14.73, -1.81883, 0.0])
+    engine.geometry.create_arc2d("BB6-y_HorCurve", "TENDON", [0.15, 0.0, 0.0, 10.23, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB6-y_VerCurve", "TENDON", [0.15, -1.69221, 0.0, 1.91642, -2.06767, 8.0, 8.9611, -2.04, 8.0, 10.23, -1.7, 0.0])
+    engine.geometry.create_arc2d("BB6-z_HorCurve", "TENDON", [0.15, 0.0, 0.0, 10.23, 0.0, 0.0])
+    engine.geometry.create_arc2d("BB6-z_VerCurve", "TENDON", [0.15, -1.7, 0.0, 1.4189, -2.04, 8.0, 8.46358, -2.06767, 8.0, 10.23, -1.69221, 0.0])
+    engine.geometry.create_arc3d("BT3-y_Curve", "TENDON", [107.15, 0.0, -0.65, 0.0, 109.016, 0.0, -0.15, 8.0, 128.083, 0.0, -0.15, 8.0, 129.73, 0.0, -0.5, 0.0])
+    engine.geometry.create_arc3d("BT3-z_Curve", "TENDON", [0.27, 0.0, -0.5, 0.0, 1.91662, 0.0, -0.15, 8.0, 20.984, 0.0, -0.15, 8.0, 22.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("BT4-y_Curve", "TENDON", [111.15, 0.0, -0.65, 0.0, 113.016, 0.0, -0.15, 8.0, 128.083, 0.0, -0.15, 8.0, 129.73, 0.0, -0.5, 0.0])
+    engine.geometry.create_arc3d("BT4-z_Curve", "TENDON", [0.27, 0.0, -0.5, 0.0, 1.91662, 0.0, -0.15, 8.0, 16.984, 0.0, -0.15, 8.0, 18.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("BT5-y_Curve", "TENDON", [115.15, 0.0, -0.65, 0.0, 117.016, 0.0, -0.15, 8.0, 128.083, 0.0, -0.15, 8.0, 129.73, 0.0, -0.5, 0.0])
+    engine.geometry.create_arc3d("BT5-z_Curve", "TENDON", [0.27, 0.0, -0.5, 0.0, 1.91662, 0.0, -0.15, 8.0, 12.984, 0.0, -0.15, 8.0, 14.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("F0-1_Curve", "TENDON", [30.15, 0.0, -2.05, 0.0, 32.8975, 0.0, -1.05, 8.0, 37.1025, 0.0, -1.05, 8.0, 39.85, 0.0, -2.05, 0.0])
+    engine.geometry.create_arc3d("F0-2_Curve", "TENDON", [90.15, 0.0, -2.05, 0.0, 92.8975, 0.0, -1.05, 8.0, 97.1025, 0.0, -1.05, 8.0, 99.85, 0.0, -2.05, 0.0])
+    engine.geometry.create_arc3d("F1-1_Curve", "TENDON", [26.65, 0.0, -1.9, 0.0, 29.3975, 0.0, -0.9, 8.0, 40.6025, 0.0, -0.9, 8.0, 43.35, 0.0, -1.9, 0.0])
+    engine.geometry.create_arc3d("F1-2_Curve", "TENDON", [86.65, 0.0, -1.9, 0.0, 89.3975, 0.0, -0.9, 8.0, 100.603, 0.0, -0.9, 8.0, 103.35, 0.0, -1.9, 0.0])
+    engine.geometry.create_arc3d("F2-1_Curve", "TENDON", [23.15, 0.0, -1.75, 0.0, 25.8975, 0.0, -0.75, 8.0, 44.1025, 0.0, -0.75, 8.0, 46.85, 0.0, -1.75, 0.0])
+    engine.geometry.create_arc3d("F2-2_Curve", "TENDON", [83.15, 0.0, -1.75, 0.0, 85.8975, 0.0, -0.75, 8.0, 104.103, 0.0, -0.75, 8.0, 106.85, 0.0, -1.75, 0.0])
+    engine.geometry.create_arc3d("F3-1_Curve", "TENDON", [19.15, 0.0, -1.6, 0.0, 21.8975, 0.0, -0.6, 8.0, 48.1025, 0.0, -0.6, 8.0, 50.85, 0.0, -1.6, 0.0])
+    engine.geometry.create_arc3d("F3-2_Curve", "TENDON", [79.15, 0.0, -1.6, 0.0, 81.8975, 0.0, -0.6, 8.0, 108.103, 0.0, -0.6, 8.0, 110.85, 0.0, -1.6, 0.0])
+    engine.geometry.create_arc3d("F4-1_Curve", "TENDON", [15.15, 0.0, -1.45, 0.0, 17.8975, 0.0, -0.45, 8.0, 52.1025, 0.0, -0.45, 8.0, 54.85, 0.0, -1.45, 0.0])
+    engine.geometry.create_arc3d("F4-2_Curve", "TENDON", [75.15, 0.0, -1.45, 0.0, 77.8975, 0.0, -0.45, 8.0, 112.103, 0.0, -0.45, 8.0, 114.85, 0.0, -1.45, 0.0])
+    engine.geometry.create_arc3d("F5-1_Curve", "TENDON", [10.65, 0.0, -1.3, 0.0, 13.3975, 0.0, -0.3, 8.0, 56.6025, 0.0, -0.3, 8.0, 59.35, 0.0, -1.3, 0.0])
+    engine.geometry.create_arc3d("F5-2_Curve", "TENDON", [70.65, 0.0, -1.3, 0.0, 73.3975, 0.0, -0.3, 8.0, 116.603, 0.0, -0.3, 8.0, 119.35, 0.0, -1.3, 0.0])
+    engine.geometry.create_arc3d("F6-1_Curve", "TENDON", [6.15, 0.0, -1.15, 0.0, 8.89748, 0.0, -0.15, 8.0, 61.1025, 0.0, -0.15, 8.0, 63.85, 0.0, -1.15, 0.0])
+    engine.geometry.create_arc3d("F6-2_Curve", "TENDON", [66.15, 0.0, -1.15, 0.0, 68.8975, 0.0, -0.15, 8.0, 121.103, 0.0, -0.15, 8.0, 123.85, 0.0, -1.15, 0.0])
+    engine.geometry.create_arc3d("T0-1_Curve", "TENDON", [30.15, 0.0, -0.65, 0.0, 30.944, 0.0, -0.51, 6.0, 39.056, 0.0, -0.51, 6.0, 39.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T0-2_Curve", "TENDON", [90.15, 0.0, -0.65, 0.0, 90.944, 0.0, -0.51, 6.0, 99.056, 0.0, -0.51, 6.0, 99.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T1-1_Curve", "TENDON", [26.65, 0.0, -0.65, 0.0, 27.444, 0.0, -0.51, 6.0, 42.556, 0.0, -0.51, 6.0, 43.35, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T1-2_Curve", "TENDON", [86.65, 0.0, -0.65, 0.0, 87.444, 0.0, -0.51, 6.0, 102.556, 0.0, -0.51, 6.0, 103.35, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T2-1_Curve", "TENDON", [23.15, 0.0, -0.65, 0.0, 24.9648, 0.0, -0.33, 6.0, 45.0352, 0.0, -0.33, 6.0, 46.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T2-2_Curve", "TENDON", [83.15, 0.0, -0.65, 0.0, 84.9648, 0.0, -0.33, 6.0, 105.035, 0.0, -0.33, 6.0, 106.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T3-1_Curve", "TENDON", [19.15, 0.0, -0.65, 0.0, 20.9648, 0.0, -0.33, 6.0, 49.0352, 0.0, -0.33, 6.0, 50.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T3-2_Curve", "TENDON", [79.15, 0.0, -0.65, 0.0, 80.9648, 0.0, -0.33, 6.0, 109.035, 0.0, -0.33, 6.0, 110.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T4-1_Curve", "TENDON", [15.15, 0.0, -0.65, 0.0, 16.9648, 0.0, -0.33, 6.0, 53.0352, 0.0, -0.33, 6.0, 54.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T4-2_Curve", "TENDON", [75.15, 0.0, -0.65, 0.0, 76.9648, 0.0, -0.33, 6.0, 113.035, 0.0, -0.33, 6.0, 114.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T5-1_Curve", "TENDON", [10.65, 0.0, -0.65, 0.0, 13.4856, 0.0, -0.15, 6.0, 56.5144, 0.0, -0.15, 6.0, 59.35, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T5-2_Curve", "TENDON", [70.65, 0.0, -0.65, 0.0, 73.4856, 0.0, -0.15, 6.0, 116.514, 0.0, -0.15, 6.0, 119.35, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T6-1_Curve", "TENDON", [6.15, 0.0, -0.65, 0.0, 8.98564, 0.0, -0.15, 6.0, 61.0144, 0.0, -0.15, 6.0, 63.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("T6-2_Curve", "TENDON", [66.15, 0.0, -0.65, 0.0, 68.9856, 0.0, -0.15, 6.0, 121.014, 0.0, -0.15, 6.0, 123.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc2d("ZB2-1_HorCurve", "TENDON", [0.15, 0.0, 0.0, 42.85, 0.0, 0.0])
+    engine.geometry.create_arc2d("ZB2-1_VerCurve", "TENDON", [0.15, -2.52593, 0.0, 2.03621, -2.85852, 6.0, 40.9638, -2.85852, 6.0, 42.85, -2.52593, 0.0])
+    engine.geometry.create_arc2d("ZB3-1_HorCurve", "TENDON", [0.15, 0.0, 0.0, 35.85, 0.0, 0.0])
+    engine.geometry.create_arc2d("ZB3-1_VerCurve", "TENDON", [0.15, -2.25236, 0.0, 2.02619, -2.58319, 6.0, 33.9738, -2.58319, 6.0, 35.85, -2.25236, 0.0])
+    engine.geometry.create_arc2d("ZB4-1_HorCurve", "TENDON", [0.15, 0.0, 0.0, 27.85, 0.0, 0.0])
+    engine.geometry.create_arc2d("ZB4-1_VerCurve", "TENDON", [0.15, -2.00225, 0.0, 2.03965, -2.33544, 6.0, 25.9603, -2.33544, 6.0, 27.85, -2.00225, 0.0])
+    engine.geometry.create_arc2d("ZB5-1_HorCurve", "TENDON", [0.15, 0.0, 0.0, 19.85, 0.0, 0.0])
+    engine.geometry.create_arc2d("ZB5-1_VerCurve", "TENDON", [0.15, -1.81883, 0.0, 2.11271, -2.16491, 6.0, 17.8873, -2.16491, 6.0, 19.85, -1.81883, 0.0])
+    engine.geometry.create_arc2d("ZB6-1_HorCurve", "TENDON", [0.15, 0.0, 0.0, 10.85, 0.0, 0.0])
+    engine.geometry.create_arc2d("ZB6-1_VerCurve", "TENDON", [0.15, -1.69221, 0.0, 2.25858, -2.06401, 6.0, 8.74142, -2.06401, 6.0, 10.85, -1.69221, 0.0])
+    engine.geometry.create_arc3d("ZT3-1_Curve", "TENDON", [47.15, 0.0, -0.65, 0.0, 49.9856, 0.0, -0.15, 6.0, 80.0144, 0.0, -0.15, 6.0, 82.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("ZT4-1_Curve", "TENDON", [51.15, 0.0, -0.65, 0.0, 53.9856, 0.0, -0.15, 6.0, 76.0144, 0.0, -0.15, 6.0, 78.85, 0.0, -0.65, 0.0])
+    engine.geometry.create_arc3d("ZT5-1_Curve", "TENDON", [55.15, 0.0, -0.65, 0.0, 57.9856, 0.0, -0.15, 6.0, 72.0144, 0.0, -0.15, 6.0, 74.85, 0.0, -0.65, 0.0])
+
+if __name__ == "__main__":
+    from _0_engine import engine
+    with batch():
+        build_property(engine)

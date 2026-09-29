@@ -1,0 +1,14 @@
+{
+  "name": "osis",
+  "displayName": "OSIS",
+  "version": "0.1.0",
+  "description": "OSIS Agent plugin: instance selection, API help and Python execution through the local OSIS Agent Broker.",
+  "author": {
+    "name": "OSIS AI Team"
+  },
+  "homepage": "https://github.com/hahahehe-coder/osis-ai-toolkits",
+  "repository": "https://github.com/hahahehe-coder/osis-ai-toolkits",
+  "license": "MIT",
+  "keywords": ["osis", "bridge", "fea", "modeling", "python"],
+  "defaultEnabled": true
+}

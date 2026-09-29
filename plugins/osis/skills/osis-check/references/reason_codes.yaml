@@ -1,0 +1,12 @@
+# 定位 JSON 的 reason_code 只能填下列短码（键名）。
+# 本文件给模型看；种错做法不在这里。
+
+codes:
+  material_grade:
+    label: 主梁混凝土等级偏低
+  tendon_area:
+    label: 钢束偏少（规格/面积变小或根数减少）
+  section_h:
+    label: 梁高偏小
+  missing_combination:
+    label: 漏荷载组合 / 漏活载

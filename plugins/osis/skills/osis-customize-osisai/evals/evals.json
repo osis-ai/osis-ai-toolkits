@@ -1,0 +1,41 @@
+{
+  "skill_name": "osis-customize-osisai",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我做个 OSIS 插件:单位换算器。长度单位 m/mm/cm/km/ft 互转,温度单位 摄氏/华氏/开尔文互转。要带界面。(插件英文目录名用 unitconv)",
+      "expected_output": "GUI 插件:~/.osisai/plugins/unitconv/{main.py,icon.png},customtkinter GUI + argparse CLI 双模式,CLI 转换结果正确(100 m mm→100000、100 C F→212),plugins.json 追加合法条目",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "帮我做个插件,把指定的 CSV 文件按某列分组,对数值列求和,输出汇总结果。命令行能用就行,不用做界面。(插件英文目录名用 csvsum)",
+      "expected_output": "纯 CLI 插件:~/.osisai/plugins/csvsum/main.py,无 GUI 但正确忽略 --ui(剥掉后按默认参数执行不报错),CLI 分组求和正确,plugins.json 注册",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我们经常要建各种异形拱桥,每次构型都不一样,得反复调参数试错。帮我把这套流程做成一个 skill,以后我说'建拱桥'就走它。(skill 目录名请用 osis-bridge-arch-demo)",
+      "expected_output": "~/.osisai/.agents/skills/osis-bridge-arch-demo/SKILL.md,合法 YAML frontmatter(name/description),description 含触发场景与用户说法,正文是给 AI 的增量操作指导而非通用套话",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "osis-engine 这套官方 skill 不好用,帮我改:查模板必须先 ls 再报全量。不要改安装包。",
+      "expected_output": "先把官方 osis-engine 整目录复制到 ~/.osisai/.agents/skills/osis-engine/(含 SKILL.md 与 references/scripts 等,跳过 .git,不创建 junction),再只改用户副本;安装包 opencode/.agents/skills 与 .xskill/skill 未改;完工说明同名覆盖是整份替换不是合并",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "记下来:我默认用 C50,局部改优先走 L0。下次别再问我。",
+      "expected_output": "写入 ~/.osisai/memory/topics/prefs.md 与 INDEX.md 一行指针;未新建 skill、未写入 .agents/skills、未改安装包;提醒下个会话开场 Read INDEX 才生效",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "把当前刚构存进模板库,以后基于它再改。",
+      "expected_output": "先 OSISEngine().sync_apdl(force_export=True) 把现网写进项目 py/prep/;再按改官方 skill 把 osis-bridge-rigid-frame-box 整目录复制到 ~/.osisai/.agents/skills/(已有用户副本则只改副本);拷 prep+项目画像.md 到 references/templates/<名>/,同构含 _0.._10 与可选 main.py;未只丢 .out、未改安装包、未走 memory",
+      "files": []
+    }
+  ]
+}

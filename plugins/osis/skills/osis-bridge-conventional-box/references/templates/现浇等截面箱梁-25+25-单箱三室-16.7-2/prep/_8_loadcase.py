@@ -1,0 +1,81 @@
+"""OSIS 命令流 LOADCASE 模块 — 荷载工况(自重、二期、预应力、温度、沉降)"""
+
+from __future__ import annotations
+
+from pyosis import batch
+
+from pyosis.core.engine import OSISEngine
+
+def build_loadcases(engine: OSISEngine) -> None:
+    # 创建钢束特性（便捷入口，内部转发到对应 create_* 方法）
+    engine.tendon.prop.create("15-9", "IN", 2, 0, 0.00126, 0.08, 0.15, 0.0015, 0.006, 0.006, 1.0, 0.3)
+    # 创建钢束形状（便捷入口，内部转发到对应 create_* 方法）
+    engine.tendon.shape.create("F1", 8, "15-9", "F1单元组", "ARC3D", "钢束样条曲线_F1")
+    # 布置钢束形状
+    engine.tendon.shape.get("F1").layout("GLOBAL")
+    engine.tendon.shape.create("F2", 8, "15-9", "F2单元组", "ARC3D", "钢束样条曲线_F2")
+    engine.tendon.shape.get("F2").layout("GLOBAL")
+    engine.tendon.shape.create("F3", 8, "15-9", "F3单元组", "ARC3D", "钢束样条曲线_F3")
+    engine.tendon.shape.get("F3").layout("GLOBAL")
+    engine.tendon.shape.create("F4", 8, "15-9", "F4单元组", "ARC3D", "钢束样条曲线_F4")
+    engine.tendon.shape.get("F4").layout("GLOBAL")
+    # 创建荷载工况
+    engine.load.create("二期_二期", "CS", 1.0)
+    for i in range(1, 33):
+        engine.load.get("二期_二期").create("LINE", i, 1, 0, 0.0, 0.0, 0.0, 0.0, 0.0, -93800.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -93800.0, 0.0, 0.0, 0.0)
+    engine.load.create("梯度降温_梯度降温", "TG", 1.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 1, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 16.7, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 2, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 16.7, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 3, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 4, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 5, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 6, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 7, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 8, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 9, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 10, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 11, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 12, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 13, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 14, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 15, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 16, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 17, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 18, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 19, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 20, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 21, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 22, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 23, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 24, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 25, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 26, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 27, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 28, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 12.364, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 29, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 15.816, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 30, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 16.7, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 31, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 16.7, -0.1, -2.75, -0.4, 0.0)
+    engine.load.get("梯度降温_梯度降温").create("GTEMP", 32, "Z", "T", 2, 16.7, 0.0, -7.0, -0.1, -2.75, 16.7, -0.1, -2.75, -0.4, 0.0)
+    engine.load.create("梯度升温_梯度升温", "TG", 1.0)
+    for i in range(1, 33):
+        engine.load.get("梯度升温_梯度升温").create("GTEMP", i, "Z", "T", 1, 16.7, 0.0, 14.0, -0.1, 5.5)
+    engine.load.create("预应力_预应力", "CS", 1.0)
+    engine.load.get("预应力_预应力").create("PST", "F1", "BOTH", "ST", 1320600000.0, 1320600000.0)
+    engine.load.get("预应力_预应力").create("PST", "F2", "BOTH", "ST", 1320600000.0, 1320600000.0)
+    engine.load.get("预应力_预应力").create("PST", "F3", "BOTH", "ST", 1320600000.0, 1320600000.0)
+    engine.load.get("预应力_预应力").create("PST", "F4", "BOTH", "ST", 1320600000.0, 1320600000.0)
+    engine.load.create("整体降温_整体降温", "T", 1.0)
+    for i in range(1, 33):
+        engine.load.get("整体降温_整体降温").create("UTEMP", i, "X", -20.0)
+    engine.load.create("整体升温_整体升温", "T", 1.0)
+    for i in range(1, 33):
+        engine.load.get("整体升温_整体升温").create("UTEMP", i, "X", 35.0)
+    engine.load.create("自重_自重", "CS", 1.0)
+    engine.load.get("自重_自重").create("GRAVITY", 0.0, 0.0, -1.04)
+    engine.load.create("自重自重", "CS", 1.0)
+    engine.load.get("自重自重").create("GRAVITY", 0.0, 0.0, -1.04)
+
+if __name__ == "__main__":
+    from _0_engine import engine
+    with batch():
+        build_loadcases(engine)
