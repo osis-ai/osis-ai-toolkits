@@ -90,7 +90,7 @@ osis-broker\scripts\run_broker.bat --debug
 
 ```bat
 pip install osis_broker-0.1.0-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
-osis-agent-broker --debug
+osis-broker --debug
 :: 目标机器没有 pyosis 时:  pip install "osis-broker[pyosis]"
 ```
 
