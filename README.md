@@ -86,6 +86,14 @@ OSIS Agent Broker 当前不可连接。
 osis-broker\scripts\run_broker.bat --debug
 ```
 
+在别人机器上实时安装 Broker：
+
+```bat
+pip install osis_broker-0.1.0-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
+osis-agent-broker --debug
+:: 目标机器没有 pyosis 时:  pip install "osis-broker[pyosis]"
+```
+
 正式发布阶段 Broker 随 OSIS 产品一起分发。
 
 ## 测试
