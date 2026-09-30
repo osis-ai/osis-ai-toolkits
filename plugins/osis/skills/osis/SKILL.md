@@ -7,6 +7,11 @@ description: OSIS 桥梁有限元建模的总入口（Codex / Claude Code 版）
 
 > 你通过 **OSIS Agent Broker**（本机 `http://127.0.0.1:18080`）操作 OSIS。
 > 你**永远不需要**知道 OSIS 实例的真实端口，也不需要本机安装 Python 或启动本地 MCP 子进程。
+>
+> `execute_python` 的执行模型：Broker 起 OSIS 官方 Python 子进程，子进程请求经
+> **Broker 的指定实例路由**（`/instances/{instance_id}/`）转发到目标实例，由 Broker
+> 逐请求注入实例身份。**不要**让生成的 Python 自己选默认目标、填实例 ID 或真实
+> 端口 —— 目标完全由 `execute_python(instance_id=...)` 决定。
 
 ## 0. 五个 MCP 工具
 
@@ -64,7 +69,7 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
 
 ```text
 get_api_help("创建梁单元")
-get_api_help(symbol="Element.create_line")
+get_api_help(symbol="ElementManager.create_beam3d")
 ```
 
 - `query` 支持中文自然语言（索引来自真实 `pyosis` 包的 docstring）。
@@ -83,7 +88,8 @@ engine = OSISEngine()   # 自动连接当前打开的 OSIS 项目
 
 - Manager 经 `engine.<name>` 访问：`material` / `section` / `node` / `element` / `boundary` / `load` / `tendon` / `stage` / `live` / `settlement` / `stability` / `dynamic` / `post` / `result` / `control` / `geometry` / `prop` / `thickness` / `project`。
 - OSIS 是**状态化**的：模型数据在 OSIS 进程里，不在 `.py` 文件里。改 `.py` ≠ 模型已变。
-- 查询类直接 `engine.solve()` / `engine.model_summary()`；**不要**为了查询去跑整桥重建。
+- **查询与求解分开**：读状态用查询 API（`engine.model_summary()`、`engine.node.count()` 等）；
+  **只有用户明确要求求解时**才调 `engine.solve()`。不要为查询去求解，更不要为查询跑整桥重建。
 
 ### 1.4 执行与写回
 
@@ -95,16 +101,30 @@ execute_python(instance_id="A81F", file="py/prep/main.py", cwd="D:/proj")  ← �
 - `code` / `file` 二选一；`file` 相对 `cwd` 解析。
 - `cwd` 默认 `~/.osisai`：涉及相对路径读写、同级模块导入、跑工程目录下的脚本时，
   显式传工程目录；不确定就用默认。
-- Broker 在 OSIS 官方 Python 环境里子进程执行，结果从 stdout 返回。
+- Broker 在 OSIS 官方 Python 环境里子进程执行，目标实例由 `instance_id` 决定
+  （请求经 Broker 实例路由，见文首执行模型），结果从 stdout 返回。
+- **带 CLI 参数的脚本**：`file` 模式会重置 `sys.argv`，不能直接表达 `python x.py --arg`。
+  用 `code` + `sys.argv` + `runpy` 配方：
+
+```python
+import sys, runpy
+sys.argv = [r"D:/proj/scripts/helper.py", "--span", "30"]  # [脚本名, 参数...]
+runpy.run_path(r"D:/proj/scripts/helper.py", run_name="__main__")
+```
 
 返回：
 
 ```json
 {"ok": true, "instance_id": "A81F", "stdout": "...", "stderr": "",
- "result": null, "execution_time_ms": 328, "exception": null}
+ "result": null, "execution_time_ms": 328, "cwd": "C:\\Users\\...\\.osisai",
+ "exception": null}
 ```
 
 失败时 `ok=false` 并带 `exception`（`type` / `message` / `traceback`）——**读 traceback 改代码再重试**，一次失败不代表 OSIS 不支持。
+
+**异常 / 超时后先读回，再决定重试**：`EXECUTION_TIMEOUT` 只表示本地子进程被停止，
+**不代表 OSIS 端已受理的操作被撤销**，也不代表修改没生效。重试前先查询/读回实例
+状态与模型数据确认实际结果，**不要**直接重跑创建/修改命令（可能重复创建或清空重建）。
 
 **改了模型脚本必须写回**。按工程模板生成的 `py/prep/` 脚本，写回用全量重建：
 

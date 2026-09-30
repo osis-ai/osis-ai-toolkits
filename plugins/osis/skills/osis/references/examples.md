@@ -38,18 +38,20 @@ print(engine.model_summary())
 ```text
 get_api_help("创建梁单元")
 → {"ok":true,"results":[
-     {"symbol":"Element.create_line","kind":"method",
-      "signature":"create_line(self, no, node1, node2, nMat, nSec1, nSec2=None, **kw)",
-      "doc":"...","examples":["..."],"related":["Element.create","Node.create"]}
-   ]}
+     {"symbol":"create_beam3d","qualname":"ElementManager.create_beam3d",
+      "kind":"method",
+      "signature":"(self, no: 'int | None', node1: 'int', node2: 'int', mat: 'int', sec1: 'int', sec2: 'int', ...)",
+      "summary":"创建梁柱单元…"},
+     …
+   ],"index":{"entries":1074,…},"hint":"用 symbol= 精确查询可拿到完整签名…"}
 
 execute_python("A81F", "
 from pyosis import OSISEngine
 engine = OSISEngine()
-engine.element.create_line(no=901, node1=1, node2=2, nMat=1, nSec1=1)
+engine.element.create_beam3d(no=901, node1=1, node2=2, mat=1, sec1=1, sec2=1)
 print('created', 901)
 ")
-→ 若 ok=false，读 exception.traceback，get_api_help(symbol='Element.create_line') 后修正重试
+→ 若 ok=false，读 exception.traceback，get_api_help(symbol='ElementManager.create_beam3d') 后修正重试
 ```
 
 ## 4. 多实例：改指定模型
@@ -83,12 +85,12 @@ list_instances()
 ## 6. 异常恢复
 
 ```text
-execute_python("A81F", "engine.element.create(no=1, type='BEAM3D', ...)")
+execute_python("A81F", "engine.element.create_beam3d(no=1, node1=1, node2=2, mat=1, sec1=1)")
 → ok=false, exception.type="TypeError",
-  exception.message="create_line() missing 1 required positional argument: 'nSec2'"
+  exception.message="create_beam3d() missing 1 required positional argument: 'sec2'"
 
-get_api_help(symbol="Element.create_line")
-→ 补上 nSec2
+get_api_help(symbol="ElementManager.create_beam3d")
+→ 补上 sec2
 
 execute_python("A81F", "修正后的脚本")
 → ok=true
@@ -96,6 +98,9 @@ execute_python("A81F", "修正后的脚本")
 execute_python("A81F", "查询验证该单元存在")
 → 报告
 ```
+
+**超时/异常后先读回再重试**：`EXECUTION_TIMEOUT` 只停了本地子进程，OSIS 端可能
+已受理部分操作。先查询读回确认实际结果，再决定是否重试 —— 不要直接重跑创建命令。
 
 ## 7. 完整建模（写回 + 评测）
 

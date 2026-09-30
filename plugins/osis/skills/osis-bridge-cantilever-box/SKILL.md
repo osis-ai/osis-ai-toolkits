@@ -281,8 +281,12 @@ CSxn+6    运营阶段(0d)
 
 悬浇三跨只改跨径 → 调 `osis-engine/scripts/spanremap.py`,禁止手改 `_5`/`_2` 数字(脚本只动节点 x 和钢束曲线 x,`_6`~`_10` 零改动;边跨 ΔL 进现浇段,中跨 ΔL 进合龙两侧恒高段,合龙 2m 与 T 构刚体平移):
 
-```bash
-python "<插件>/skills/osis-engine/scripts/spanremap.py" --to "<目标跨径>"
+```text
+execute_python(instance_id=..., code="""
+import sys, runpy
+sys.argv = ["spanremap.py", "--to", "<目标跨径>"]
+runpy.run_path(r"<插件>/skills/osis-engine/scripts/spanremap.py", run_name="__main__")
+""", cwd="<project_dir>")
 ```
 
 看 stdout 校核(节点数、梁端、墩位、合龙 2m、单调/总长/镜像)。失败或非三跨 → 换近邻,不要手改。桥宽/h_root/板厚仍改 `_4`(必要时 `_6` 的 `h_elem`);只改 h_mid 走 `osis-edit-hmid`。贴底束 bottom 机制见 `osis-module-tendon`。

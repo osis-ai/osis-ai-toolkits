@@ -86,15 +86,26 @@ OSIS Agent Broker 当前不可连接。
 osis-broker\scripts\run_broker.bat --debug
 ```
 
-在别人机器上实时安装 Broker：
+在别人机器上实时安装 Broker（**用 uv,不用系统 pip**）：
 
 ```bat
-pip install osis_broker-0.1.0-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
+uv pip install osis_broker-0.1.0-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
 osis-broker --debug
-:: 目标机器没有 pyosis 时:  pip install "osis-broker[pyosis]"
+:: 目标机器没有 pyosis 时:  uv pip install "osis-broker[pyosis]"
 ```
 
 正式发布阶段 Broker 随 OSIS 产品一起分发。
+
+**默认实例与失效规则**（手写脚本直接打 18080 时适用，详见 `osis-broker/docs/contract.md §2.4`）：
+
+- 首个就绪实例自动成为默认目标；WebUI 顶部显示并可显式切换；
+- 默认实例离线/关闭/移除 → **报错，绝不自动改用另一个模型**；
+- 显式 `/instances/{id}/` 路由（`execute_python` 的 instance_id）不受切换影响；
+- 不跨 Broker 重启持久化，重启后由首个就绪心跳重新绑定。
+
+**CORS 实际策略**（与 `osis-broker/README.md` 一致）：精确白名单 + `127.0.0.1`/
+`localhost` 任意端口 + `osisbim.com` 子域；非白名单来源服务端 403；设置
+`OSIS_BROKER_TOKEN` 后跨源浏览器请求需 Bearer，同源 WebUI 与无 Origin 原生调用豁免。
 
 ## 测试
 

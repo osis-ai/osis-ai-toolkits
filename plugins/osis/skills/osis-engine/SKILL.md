@@ -186,7 +186,7 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 ### 写回:一律全量重建
 
-**改代码 ≠ 写回 OSIS**。`.py` 只是磁盘脚本。局部修改、加功能、失败修复:改完 `.py` 后、向用户报完工前,**同一轮跑** `python <project_dir>/py/prep/main.py`。它会先 `clear()` 再按 `_1`..`_10` 整桥重建。不要用局部命令、单跑 `_N_xxx.py`、或 `osis-l0-hot` 代替这次重建。禁止未执行时说「已完成 / 已改好 / 功能已加上」;未跑完最多说「代码已改,正在执行写回」。例外仅当用户明确说「先别跑 / 只改代码不要执行 / dry-run」,报告写明「按用户要求未执行」。
+**改代码 ≠ 写回 OSIS**。`.py` 只是磁盘脚本。局部修改、加功能、失败修复:改完 `.py` 后、向用户报完工前,**同一轮执行**写回(`execute_python(file="py/prep/main.py", cwd="<project_dir>")`)。它会先 `clear()` 再按 `_1`..`_10` 整桥重建。不要用局部命令、单跑 `_N_xxx.py`、或 `osis-l0-hot` 代替这次重建。禁止未执行时说「已完成 / 已改好 / 功能已加上」;未跑完最多说「代码已改,正在执行写回」。例外仅当用户明确说「先别跑 / 只改代码不要执行 / dry-run」,报告写明「按用户要求未执行」。
 
 只求解、不改模型: `OSISEngine().solve()`,不要 `main.py`。
 
@@ -200,19 +200,24 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 ### 两种执行模式
 
-| 模式 | 命令 | 用途 |
+| 模式 | `execute_python` 调用 | 用途 |
 |---|---|---|
-| 改了 `py/` 的写回 | `python <project_dir>/py/prep/main.py` | 先 `clear()` 再整桥重建 |
-| 求解已有模型 | `python -c "from pyosis import OSISEngine; OSISEngine().solve()"` | 模型已在 OSIS 中,只求解,不改 `py/` |
+| 改了 `py/` 的写回 | `execute_python(instance_id=..., file="py/prep/main.py", cwd="<project_dir>")` | 先 `clear()` 再整桥重建 |
+| 求解已有模型 | `execute_python(instance_id=..., code="from pyosis import OSISEngine; OSISEngine().solve()")` | 模型已在 OSIS 中,只求解,不改 `py/` |
 
-> `clear()` 在 `main.py` 入口处。单跑 `_N_xxx.py` 不会清空全桥,也不再作为写回手段。
+> **不要用本地 shell 跑 `python ...`** —— 所有执行都走 `execute_python`(见核心 `osis` SKILL)。
+> 带 CLI 参数的辅助脚本用 `code` + `sys.argv` + `runpy.run_path` 配方,不要用 `file` 模式
+> 直接传参数(`file` 模式会重置 `sys.argv`)。
 
-`main.py` 入口有幂等的 `sys.path.insert`,从任何目录跑都能 import 同目录的 `_0_engine.py`。`OSISEngine()` 实例化时自动连接当前打开的 OSIS 项目,**不需要 `cd`**。
+> `clear()` 在 `main.py` 入口处。单跑 `_N_xxx.py` 不会清空全桥,也不再作为写回手 段。
+
+`main.py` 入口有幂等的 `sys.path.insert`,从任何工作目录跑都能 import 同目录的 `_0_engine.py`。`OSISEngine()` 实例化时自动连接当前打开的 OSIS 项目,**不需要 `cd`**(把工程目录传给 `cwd` 即可)。
 
 **绝对禁止**:
 - `python prep/main.py --solve` —— 当前 `main.py` 不接受该参数
 - 修改后不重新运行 / **只改代码不执行** —— 违规。OSIS 不会感知 `py/` 文件变化
-- **未修改任何 `.py` 就重跑 `main.py`** —— 必然在同一处再次报错,构成死循环(见 §失败修复流程)
+- **未修改任何 `.py` 就重跑 `main.py`** —— 必然在同一处再次报错,构成死循环(见 § 失败修复流程)
+- **超时/异常后盲目重试** —— 先读回模型状态确认已发生的修改,再决定重跑(可能重复创建或清空重建)
 
 ### Engine 便捷操作
 

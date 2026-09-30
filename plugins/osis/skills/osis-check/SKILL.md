@@ -27,14 +27,14 @@ description: 验算结果检查分析工具。当用户需要(1)查看验算结�
 
 在调用此 SKILL 之前，**项目必须已构建并求解完成**。如尚未验算，先执行步骤1；如已验算过，跳过步骤1直接从步骤2导出结果。
 
-> **定位项目目录**：执行 `python -c "from pyosis.core.engine import OSISEngine; print(OSISEngine().project.get_directory())"` 获取 OSIS 打开的项目目录，所有文件操作基于此路径。
+> **定位项目目录**：用 `execute_python(instance_id=..., code="from pyosis.core.engine import OSISEngine; print(OSISEngine().project.get_directory())")` 获取 OSIS 打开的项目目录，所有文件操作基于此路径。
 
 ## 步骤1：生成组合并验算
 
 用户**未说明如何验算**时：
 
-```bash
-python -c "from pyosis import OSISEngine; OSISEngine().post.combination_and_check()"
+```text
+execute_python(instance_id=..., code="from pyosis import OSISEngine; OSISEngine().post.combination_and_check()")
 ```
 
 （`combination_and_check` 由 `PostManager` 提供,无参数）

@@ -45,22 +45,26 @@ OSIS 是有状态的软件：模型数据驻留在 OSIS 进程内，不在 `.py`
 - 改磁盘上的 `py/prep/*.py` 不等于模型变了，必须执行写回（见 `common-workflows.md`）。
 - 实例重启后模型状态从磁盘重新加载，`instance_id` 也换了。
 
-## 透传代理
+## 实例路由与透传
 
-`execute_python` **不走**代理 —— 它由 Broker 在 OSIS 官方 Python 环境里子进程执行
-（见 `SKILL.md §1.4`）。代理只服务于 `raw_http_request` 这类透传调用：
+`execute_python` 的执行模型（见 `SKILL.md §1.4`）：Broker 起 OSIS 官方 Python 子进程，
+子进程的 pyosis 请求打到 **Broker 的显式实例路由**：
 
-`ANY http://127.0.0.1:18080/instances/A81F/<path>` 会被转发成
+`ANY http://127.0.0.1:18080/instances/A81F/<path>` → 转发成
 
 `ANY http://127.0.0.1:<A81F 真实端口>/<path>`
 
-Broker 不重新实现 OSIS 的业务 API，只做 Method / Path / Query / Body / Content-Type / 状态码的透明转发，并额外加一个请求头：
+`raw_http_request` 也走同一代理。Broker 不重新实现 OSIS 的业务 API，只做
+Method / Path / Query / Body / Content-Type / 状态码的透明转发，并额外加一个请求头：
 
 ```http
 X-OSIS-Instance-ID: A81F
 ```
 
-OSIS 侧校验这个头与自己注册的 ID 是否一致。若该端口已被另一个实例占用，OSIS 返回 `409 INSTANCE_MISMATCH`，Broker 会把错误结构化返回并复核实例状态。
+每次转发都会**先移除源请求里所有同名（含小写变体）实例头，只注入一个正确值**。
+OSIS 侧校验这个头与自己注册的 ID 是否一致。若该端口已被另一个实例占用，OSIS 返回
+`409 INSTANCE_MISMATCH`，Broker 把错误结构化返回并复核实例状态 —— **身份保证靠每次
+转发的逐请求校验，不依赖一次性的预检**。
 
 ## API 索引
 
