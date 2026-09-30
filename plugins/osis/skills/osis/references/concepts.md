@@ -55,16 +55,18 @@ OSIS 是有状态的软件：模型数据驻留在 OSIS 进程内，不在 `.py`
 `ANY http://127.0.0.1:<A81F 真实端口>/<path>`
 
 `raw_http_request` 也走同一代理。Broker 不重新实现 OSIS 的业务 API，只做
-Method / Path / Query / Body / Content-Type / 状态码的透明转发，并额外加一个请求头：
+Method / Path / Query / Body / Content-Type / 状态码的透明转发。
 
-```http
-X-OSIS-Instance-ID: A81F
-```
+**不再注入 `X-OSIS-Instance-ID`**（2026-09-30 变更）：OSIS 已不校验实例身份，
+也不再由 OSIS 生成/回传 `instance_id`。身份保证由 **Broker 心跳层**承担：
 
-每次转发都会**先移除源请求里所有同名（含小写变体）实例头，只注入一个正确值**。
-OSIS 侧校验这个头与自己注册的 ID 是否一致。若该端口已被另一个实例占用，OSIS 返回
-`409 INSTANCE_MISMATCH`，Broker 把错误结构化返回并复核实例状态 —— **身份保证靠每次
-转发的逐请求校验，不依赖一次性的预检**。
+- 实例 ID 由 Broker 按 `(port, pid)` 稳定分配与复用；
+- 同端口换 pid（实例重启/端口被新进程占用）→ 旧 `instance_id` 立即 `offline`，
+  后续 `execute_python`/代理在**发出任何请求前**就被 `registry` 拒绝；
+- 请求前的存活/状态校验 + Skill 层操作前确认与修改后读回验证。
+
+若上游仍返回 `409 INSTANCE_MISMATCH`（旧版 OSIS/中间层），Broker 会结构化返回
+并复核实例状态（兼容保留；当前 OSIS 不会发送）。
 
 ## API 索引
 

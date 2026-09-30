@@ -192,7 +192,7 @@ engine.solve()
 | `INSTANCE_NOT_FOUND` | 重新 `list_instances`，ID 可能已过期 |
 | `INSTANCE_OFFLINE` | 实例已离线，重新 `list_instances`；提示用户检查 OSIS 是否闪退 |
 | `INSTANCE_NOT_READY` | 实例 `starting`/`closing`，稍后重试或询问用户 |
-| `INSTANCE_MISMATCH` | 端口被另一个实例占用，Broker 已复核状态 → 重新 `list_instances` 再试 |
+| `INSTANCE_MISMATCH` | 上游返回 409+INSTANCE_MISMATCH（**兼容性错误**：当前 OSIS 不再校验、不会发送）→ 重新 `list_instances` 再试 |
 | `EXECUTION_TIMEOUT` | 脚本超时，拆小任务或加大 `timeout` 后重试 |
 | `PYTHON_ERROR` | 读 traceback，改代码（必要时 `get_api_help`）后重试 |
 | `OSIS_HTTP_ERROR` | OSIS 侧返回非 2xx，看响应内容判断是参数问题还是实例问题 |

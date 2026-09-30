@@ -29,11 +29,15 @@ OSIS Agent Broker 当前不可连接。
 
 ## `INSTANCE_MISMATCH` (409)
 
-转发目标端口上的进程已经不是注册时那个实例（端口被重新占用）：
+**兼容性错误**：当前 OSIS 不再校验实例身份、不会发送 409（2026-09-30 变更），
+看到它意味着上游是旧版 OSIS 或中间层返回的：
 
 1. 重新 `list_instances` 拿最新映射。
 2. 用新 `instance_id` 重试。
-3. 仍失败 → Broker 与 OSIS 的注册信息不同步，让用户重启 OSIS。
+3. 仍失败 → 让用户升级 OSIS 或重启实例。
+
+端口复用/实例重启的**正常防线是心跳层**：这类场景通常先表现为
+`INSTANCE_OFFLINE` 或 ID 变化 —— 按上面的错误处理即可。
 
 ## `INSTANCE_NOT_READY`
 
