@@ -45,6 +45,7 @@ list_instances  →  确定 instance_id
 生成尽量短且明确的 Python
       ↓
 execute_python(instance_id, code?/file?, cwd?, timeout?)
+             instance_id="solver" → 仅求解器模式(OSIS 未启动也能用)
       ↓
 读 stdout / result / exception
       ├─ 有 exception → 修代码（必要时 get_api_help）→ 重试
@@ -61,8 +62,8 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
 - 多个实例 → 优先按 `project`、`window_title`、`state` 判断用户指的是哪个。
 - 仍有歧义 → **必须问用户**，禁止随便挑一个。
 - 实例重启后 `instance_id` 会变，**旧 ID 不得自动映射**到新实例；ID 失效就重新 `list_instances`。
-- 不要向用户暴露或记录 OSIS 真实端口。
-
+- 不要向用户暴露或记录 OSIS 真实端口。- **没有启动任何 OSIS 实例也可以干活**：一次性求解（仅求解器模式）用魔法值
+  `instance_id="solver"`，见 §1.4；`list_instances` 为空时不必让用户先开 OSIS。
 ### 1.2 查 API
 
 **不允许猜测 OSIS API 名称。** 不确定就先查：
@@ -134,6 +135,29 @@ runpy.run_path(r"<project_dir>/py/prep/main.py", run_name="__main__")
 ```
 
 （`main.py` 自带幂等的 `sys.path` 引导，任何工作目录都能跑。）只求解不改模型时用 `engine.solve()`，不要跑 `main.py`。
+
+#### 仅求解器模式（OSIS 未启动 / 一次性求解）
+
+`instance_id="solver"`（魔法值，大小写不敏感）：**不注册、不管理实例**，Broker
+分配一个空闲端口（避开 Broker 自己的 18080），跑完即结束。适用：用户没开
+OSIS、只想要求解结果的一次性任务。
+
+```python
+import os
+from pyosis.core.solver import OSISSolver
+from pyosis import OSISEngine
+
+solver = OSISSolver(osis_install_path=r"<OSIS安装根目录>",   # 目录下需有 PySolver.dll
+                    port=int(os.environ["OSIS_SOLVER_PORT"]))  # Broker 分配,不要写死
+engine = OSISEngine.from_solver(solver)
+engine.run("...")
+engine.solve()
+```
+
+- **端口必须读 `OSIS_SOLVER_PORT`**（结果里也回显 `solver_port`）—— Broker 分配的，写死会与 Broker 的 18080 或其它进程相撞；
+- `OSIS_URL` 在此模式下**不注入**，`from_solver` 设的端口不会被劫到 Broker 路由；
+- 模型数据在 solver 进程里，**跑完即丢**——不改磁盘工程、不写回、不跨调用保留状态；
+- 长求解把 `timeout` 加大（最大 600）。
 
 禁止在没执行写回时说「已完成 / 已改好」；未执行最多说「代码已改，正在执行写回」。用户明确要求 dry-run 除外。
 
