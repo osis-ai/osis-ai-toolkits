@@ -18,7 +18,7 @@ OSIS Agent Broker 当前不可连接。
 
 | 情况 | 说明 |
 |---|---|
-| OSIS 根本没开 | 正常，让用户打开模型 |
+| OSIS 根本没开 | 正常，让用户打开一个 OSIS 实例 |
 | OSIS 开了但列表为空 | OSIS 未发 heartbeat 或已超时；查 Broker debug 日志的 heartbeat 记录 |
 | 列表里有但 `state=offline` | 心跳中断，OSIS 可能闪退 |
 
