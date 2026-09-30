@@ -155,6 +155,10 @@ engine.solve()
 ```
 
 - **端口必须读 `OSIS_SOLVER_PORT`**（结果里也回显 `solver_port`）—— Broker 分配的，写死会与 Broker 的 18080 或其它进程相撞；
+- 同一端口也写进了 pyosis 官方变量 `OSIS_HTTP_PORT`（pyosis 不认识
+  `OSIS_SOLVER_PORT`，后者只是 Broker 给脚本的传参通道，因为
+  `OSISSolver` 不读环境变量、默认硬编码 18080），所以零参数 `OSISEngine()`
+  也会直连该 solver；
 - `OSIS_URL` 在此模式下**不注入**，`from_solver` 设的端口不会被劫到 Broker 路由；
 - 模型数据在 solver 进程里，**跑完即丢**——不改磁盘工程、不写回、不跨调用保留状态；
 - 长求解把 `timeout` 加大（最大 600）。

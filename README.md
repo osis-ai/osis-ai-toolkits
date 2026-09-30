@@ -89,7 +89,7 @@ osis-broker\scripts\run_broker.bat --debug
 在别人机器上实时安装 Broker（**用 uv,不用系统 pip**）：
 
 ```bat
-uv pip install osis_broker-1.0.0-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
+uv pip install osis_broker-1.0.1-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
 osis-broker --debug
 :: 目标机器没有 pyosis 时:  uv pip install "osis-broker[pyosis]"
 ```
