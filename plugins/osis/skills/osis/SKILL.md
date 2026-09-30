@@ -46,6 +46,7 @@ list_instances  →  确定 instance_id
       ↓
 execute_python(instance_id, code?/file?, cwd?, timeout?)
              instance_id="solver" → 仅求解器模式(OSIS 未启动也能用)
+             instance_id="default" → 当前默认实例(与手写 18080 直连同目标)
       ↓
 读 stdout / result / exception
       ├─ 有 exception → 修代码（必要时 get_api_help）→ 重试
@@ -62,8 +63,12 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
 - 多个实例 → 优先按 `project`、`window_title`、`state` 判断用户指的是哪个。
 - 仍有歧义 → **必须问用户**，禁止随便挑一个。
 - 实例重启后 `instance_id` 会变，**旧 ID 不得自动映射**到新实例；ID 失效就重新 `list_instances`。
-- 不要向用户暴露或记录 OSIS 真实端口。- **没有启动任何 OSIS 实例也可以干活**：一次性求解（仅求解器模式）用魔法值
+- 不要向用户暴露或记录 OSIS 真实端口。
+- **没有启动任何 OSIS 实例也可以干活**：一次性求解（仅求解器模式）用魔法值
   `instance_id="solver"`，见 §1.4；`list_instances` 为空时不必让用户先开 OSIS。
+- **魔法值 `instance_id="default"`**（大小写不敏感）= 路由到当前默认实例，
+  与手写脚本直连 18080 是同一目标；默认实例失效时报结构化错误、**不自动换
+  目标**（需在 WebUI 顶部或卡片上手动切换）。多实例歧义**不能**用它回避询问。
 ### 1.2 查 API
 
 **不允许猜测 OSIS API 名称。** 不确定就先查：
