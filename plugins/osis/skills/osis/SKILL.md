@@ -39,7 +39,7 @@ list_instances  →  确定 instance_id
       ↓
 生成尽量短且明确的 Python
       ↓
-execute_python(instance_id, code, timeout?)
+execute_python(instance_id, code?/file?, cwd?, timeout?)
       ↓
 读 stdout / result / exception
       ├─ 有 exception → 修代码（必要时 get_api_help）→ 重试
@@ -89,7 +89,13 @@ engine = OSISEngine()   # 自动连接当前打开的 OSIS 项目
 
 ```text
 execute_python(instance_id="A81F", code="...", timeout=60)
+execute_python(instance_id="A81F", file="py/prep/main.py", cwd="D:/proj")  ← 跑已有脚本
 ```
+
+- `code` / `file` 二选一；`file` 相对 `cwd` 解析。
+- `cwd` 默认 `~/.osisai`：涉及相对路径读写、同级模块导入、跑工程目录下的脚本时，
+  显式传工程目录；不确定就用默认。
+- Broker 在 OSIS 官方 Python 环境里子进程执行，结果从 stdout 返回。
 
 返回：
 

@@ -14,8 +14,9 @@ pyosis 是 OSIS 的 Python 建模库(Manager 模式),通过 HTTP 控制运行中
 所有 API 以当前安装版本为准,不确定就现场查,禁止凭印象写。
 
 > **端口与执行方式(Codex / Claude Code)**:你不需要、也不应该自己去连 OSIS 端口。
-> 所有 Python 都通过 MCP 工具 `execute_python(instance_id, code)` 在实例内执行,
-> 端口与 `instance_id` 的映射由 OSIS Agent Broker 维护(注意:Broker 自己监听 18080,
+> 所有 Python 都通过 MCP 工具 `execute_python(instance_id, code 或 file)` 执行,
+> Broker 在 OSIS 官方 Python 环境里子进程运行,端口与 `instance_id` 的映射由
+> OSIS Agent Broker 维护(注意:Broker 自己监听 18080,
 > 那是 Broker 而不是 OSIS)。需要查 API 用 `get_api_help`。
 
 ## 安装

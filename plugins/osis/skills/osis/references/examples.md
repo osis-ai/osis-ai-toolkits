@@ -105,11 +105,12 @@ execute_python("A81F", "查询验证该单元存在")
 list_instances()                      → A81F
 读 osis-engine SKILL                   → 路由到 osis-bridge-cantilever-box
 读模板 references/templates/...        → 复制到 <project>/py/prep/
+execute_python("A81F", file="py/prep/main.py", cwd="D:/proj")   → 写回
 execute_python("A81F", "
-import runpy
-runpy.run_path(r'D:/proj/py/prep/main.py', run_name='__main__')
-")                                     → 写回
-execute_python("A81F", "engine.model_summary()")  → 验证
+from pyosis import OSISEngine
+engine = OSISEngine()
+print(engine.model_summary())
+")                                     → 验证
 按 osis-auto-testconformance 做构造评测 → 报告
 ```
 

@@ -47,9 +47,12 @@ OSIS 是有状态的软件：模型数据驻留在 OSIS 进程内，不在 `.py`
 
 ## 透传代理
 
-`POST http://127.0.0.1:18080/instances/A81F/execute` 会被转发成
+`execute_python` **不走**代理 —— 它由 Broker 在 OSIS 官方 Python 环境里子进程执行
+（见 `SKILL.md §1.4`）。代理只服务于 `raw_http_request` 这类透传调用：
 
-`POST http://127.0.0.1:<A81F 真实端口>/execute`
+`ANY http://127.0.0.1:18080/instances/A81F/<path>` 会被转发成
+
+`ANY http://127.0.0.1:<A81F 真实端口>/<path>`
 
 Broker 不重新实现 OSIS 的业务 API，只做 Method / Path / Query / Body / Content-Type / 状态码的透明转发，并额外加一个请求头：
 
