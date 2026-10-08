@@ -3,6 +3,15 @@
     "osis": {
       "type": "http",
       "url": "http://127.0.0.1:18080/mcp"
+    },
+    "weknora": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "weknora_mcp_server"],
+      "env": {
+        "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1",
+        "WEKNORA_API_KEY": "${WEKNORA_API_KEY}"
+      }
     }
   }
 }

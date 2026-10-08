@@ -188,8 +188,8 @@ print(dst)
 
 1. **确认当前已打开的 OSIS 项目**;路由桥型 → 官方 skill 名(如 `osis-bridge-rigid-frame-box`)。不确定就 `ls` 官方/已加载的 bridge skills,不要猜。
 2. **导出**:界面手建的模型可能还没进 `py/`。入库以现网模型为准时:
-   ```text
-   execute_python(instance_id=..., code="from pyosis import OSISEngine; OSISEngine().sync_apdl(force_export=True)")
+   ```bash
+   python -c "from pyosis import OSISEngine; OSISEngine().sync_apdl(force_export=True)"
    ```
    把界面模型写进当前项目 `py/prep/`。失败则停,不要拿过期 py 入库。
 3. **按 §改官方 skill**:用户态还没有该 `<name>` 就整目录复制到 `~/.osisai/.agents/skills/<name>/`(`Path.resolve()` 拷真实文件,不要拷成链接);已有用户副本只改副本。

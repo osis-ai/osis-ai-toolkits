@@ -46,38 +46,24 @@ description: 桥梁构造建模正确性自动评测。在用户完成 `_1`..`_1
 
 ## 用法 （CLI 推荐）
 
-> **执行方式**：不要在本地 shell 跑 `python`。用 `execute_python(code=...)` +
-> `sys.argv` + `runpy.run_path`（见核心 `osis` SKILL §1.4 配方），
-> `cwd` 传本 Skill 目录：
->
-> ```python
-> import sys, runpy
-> sys.argv = ["test_conformance.py", "--candidate-dir", r"<path>",
->             "--bridge-type", "cantilever_box", "--is-continuous", "true"]
-> runpy.run_path(r"<skill_dir>/scripts/test_conformance.py", run_name="__main__")
-> ```
->
-> 下面的 CLI 参数原样搬到 `sys.argv`（脚本名后面依次跟参数）。`file` 模式不能传参
-> （会重置 `sys.argv`），不要用。
-
-`scripts/` 下有 `test_conformance.py`(CLI)。
+`scripts/` 下有 `test_conformance.py`(CLI;`<skill_dir>` = 本 SKILL.md 所在目录)。
 
 **标准模式(显式传桥型,推荐)**:
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
-python scripts/test_conformance.py \
+```bash
+python <skill_dir>/scripts/test_conformance.py \
     --candidate-dir <path> \
     --bridge-type cantilever_box \
     --is-continuous true
 ```
 
 **自动模式(兜底:从 OSIS 当前项目读 py/,桥型从目录名猜;主跨从节点提取)**:
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
-python scripts/test_conformance.py
+```bash
+python <skill_dir>/scripts/test_conformance.py
 ```
 
 **只指定候选目录**(桥型仍从目录名猜,目录名不含信息时回退 unknown,分数可能失真):
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
-python scripts/test_conformance.py --candidate-dir <path>
+```bash
+python <skill_dir>/scripts/test_conformance.py --candidate-dir <path>
 ```
 
 **支持的可选参数**:

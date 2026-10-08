@@ -70,15 +70,10 @@ Method / Path / Query / Body / Content-Type / 状态码的透明转发。
 
 ## API 索引
 
-`get_api_help` 的内容来自本机 `pyosis` 包（PyPI 名 `osis-python`）的真实 docstring —— 与已安装 OSIS 版本对应。索引在 Broker 首次启动时反射生成并缓存，**不**把几千个函数塞进 Skill。
+`api_glob` / `api_grep` / `api_read` 的内容来自 OSIS 执行环境里 `pyosis` 包（PyPI 名 `osis-python`）的真实签名与 docstring —— 与已安装 OSIS 版本对应。索引在首次查询时反射生成并按版本缓存，**不**把几千个函数塞进 Skill。`engine.x.y` 访问路径由 pyosis 的 `@property` 返回注解推出。
 
-## 与 OpenCode 版本的关系
+## 与 OSIS-AI 的关系
 
-原 OpenCode 侧的 skill（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等）被原样搬进本插件，作为**领域知识**继续有效。变化的只有「怎么执行」：
-
-| | OpenCode | Codex / Claude Code |
-|---|---|---|
-| 执行 Python | 本地 shell `python xxx.py` | `execute_python` MCP 工具 |
-| 查 API | WeKnora MCP + `pyosis_doc.py` | `get_api_help` MCP 工具（也可直接读 skill 附带脚本） |
-| 反问用户 | 内置 `question` 工具 | 普通文本提问 |
-| 找工程目录 | `%OSIS_EXTRA_CONFIG_DIR%` | 从 `get_instance_info().project` 推导 |
+领域 skill（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等）与 OSIS-AI 共用同一份源
+（`osis-skill-enhance/.agents/skills`），原样同步进本插件，写法宿主中立（见 `SKILL.md §4`）。
+本插件额外提供的只有本 skill（Broker 用法）与 `api_*` / `execute_python` 等 MCP 工具。

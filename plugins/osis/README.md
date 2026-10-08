@@ -8,48 +8,45 @@
 |---|---|---|
 | `plugin.json` | Codex | 便携 manifest（`agent-plugins.org` schema） |
 | `mcp.json` | Codex | MCP 配置，`type: streamable-http` |
-| `.codex-plugin/plugin.json` | Codex | 兼容层 |
 | `.claude-plugin/plugin.json` | Claude Code | manifest（`name` 必填、kebab-case） |
 | `.mcp.json` | Claude Code | MCP 配置，`type: http` |
 | `skills/` | 两者共用 | 唯一 Skill 源 |
 | `tests/` | — | manifest 与 Skill 校验 |
 
-两侧的 MCP 都指向同一个地址：
+两侧配置同两个 MCP server：
 
-```json
-http://127.0.0.1:18080/mcp
-```
+| server | 类型 | 说明 |
+|---|---|---|
+| `osis` | HTTP `http://127.0.0.1:18080/mcp` | OSIS Agent Broker |
+| `weknora` | stdio `python -m weknora_mcp_server` | 桥梁模板/知识库检索;key 读环境变量 `WEKNORA_API_KEY` |
 
 ## Skill
 
-- **`skills/osis/SKILL.md`** —— 核心入口。规定标准工作流、实例选择、错误码应对、铁律，以及 OpenCode 专属内容在本宿主的替代方式。
+- **`skills/osis/SKILL.md`** —— 插件自有的核心入口：Broker 工作流、实例选择、错误码应对、铁律。
 - `skills/osis/references/` —— `concepts.md` / `common-workflows.md` / `troubleshooting.md` / `examples.md`
-- `skills/osis-engine/`、`skills/osis-bridge-*/`、`skills/osis-module-*/` 等 —— 领域知识，从 OpenCode 版本迁移而来。
+- 其余（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等）—— 领域 skill，**从 `osis-skill-enhance/.agents/skills` 原样同步，不要在本仓库手改**：
 
-### 与 OpenCode 版本的差异
+```bat
+python scripts\sync_skills.py          :: 默认源 ..\osis-skill-enhance\.agents\skills
+```
 
-这些是 OpenCode 专属的，在 Codex / Claude Code 中**不可用**（核心 Skill §4 已统一说明）：
-
-| OpenCode | 本插件 |
-|---|---|
-| 内置 `question` 工具 | 普通文本反问 |
-| WeKnora MCP（`list_knowledge_bases` / `hybrid_search` / …） | `get_api_help` MCP 工具，或直接读 skill 自带 `scripts/`、`references/templates/` |
-| `%OSIS_EXTRA_CONFIG_DIR%` | `<插件>/skills/`（读到的 SKILL.md 所在目录） |
-| `osis-memory` 工具 | 直接读写 `~/.osisai/memory/PROFILE.md` |
-| 本地 `python xxx.py` | `execute_python` MCP 工具 |
+同步结果与源 commit 记在 `skills/.synced-from`；`tests/test_manifests.py` 会拦下与源不一致的手改。
+`osis-l0-hot`（已停用）不同步。领域 skill 的宿主中立写法规范见源仓库 `SKILL编写规则.md §11`。
 
 ## MCP 工具
 
 ```text
 list_instances()                           列出可用实例
 get_instance_info(instance_id)             操作前二次确认
-get_api_help(query?, symbol?)              真实 OSIS Python API 文档
+api_glob(pattern)                          通配符列 API(限定名 / engine.x.y 路径)
+api_grep(pattern)                          正则搜签名与 docstring
+api_read(symbol)                           单个 API 全文;歧义列候选
 execute_python(instance_id, code, timeout) 核心:在实例里执行 Python
 raw_http_request(...)                      高级兼容入口,非日常工作流
 ```
 
 不把几百个 OSIS API 做成 Tool —— 复杂操作由 Agent 写 Python 走 `execute_python`。
-`get_api_help` 的内容来自本机 `pyosis` 的真实 docstring，与已安装版本对应。
+`api_*` 的内容来自 OSIS 执行环境里 `pyosis` 的真实签名与 docstring，与已安装版本对应。
 
 ## 故障排查
 

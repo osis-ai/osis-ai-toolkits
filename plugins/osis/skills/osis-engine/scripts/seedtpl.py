@@ -353,8 +353,7 @@ def run(ns: argparse.Namespace) -> int:
         lines.append(f"下一步: python {dest / 'py' / 'prep' / 'main.py'}")
     else:
         lines.append(
-            "下一步: 悬浇三跨只改跨径 → python "
-            f"{Path(__file__).with_name('spanremap.py')} --to <目标跨径>; "
+            "下一步: 悬浇三跨只改跨径 → 按 osis-bridge-cantilever-box 跑 spanremap; "
             "其余按桥型 SKILL 最小 diff,再 python "
             f"{dest / 'py' / 'prep' / 'main.py'}"
         )

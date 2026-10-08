@@ -42,13 +42,15 @@ engine.prop.creep_shrink.create(
     avg_humidity=75.0,      # 平均环境湿度(%)
     birth_time=7,           # 加载龄期(天)
     type_coeff=5.0,         # 类型系数
-    shrink_birth=3,         # 收缩起始龄期(天)
+    shrink_birth=3,         # 收缩起始龄期(天)。读回字段是 birth_by_shrinking
 )
 ```
 
+读回没有 `shrinkBirth`。创建时 pyosis 参数名仍是 `shrink_birth`，读回用 `birth_by_shrinking`。它和 `birth_time`（加载龄期）不是同一个数，不要把 `birth_by_shrinking` 改成 `birth_time`。
+
 **典型参数**:
 
-| 项目 | avg_humidity | birth_time | shrink_birth |
+| 项目 | avg_humidity | birth_time | birth_by_shrinking |
 |---|---|---|---|
 | 主梁 | 70~75% | 7d | 3d |
 | 桥墩 | 70~75% | 7d | 3d |

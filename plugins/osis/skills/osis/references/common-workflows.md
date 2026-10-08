@@ -34,7 +34,7 @@ engine.solve()
 
 ## 2. 修改型（含写回 + 验证）
 
-1. `get_api_help` 确认要用的 API。
+1. `api_glob` / `api_grep` 定位、`api_read` 确认要用的 API。
 2. 写最小脚本，`execute_python` 执行。
 3. **写回**：若改的是 `py/prep/` 下的模板脚本，执行全量重建：
 
@@ -61,11 +61,13 @@ runpy.run_path(r"<project_dir>/py/prep/main.py", run_name="__main__")
 ```text
 用户：给当前模型创建一个 XXX 类型单元
   ↓ 你不确定 API 名
-get_api_help("创建 XXX 单元")
-  ↓ 拿到签名与示例
+api_glob("engine.element.create_*") 或 api_grep("XXX")
+  ↓ 找到候选限定名
+api_read("ElementManager.create_xxx")
+  ↓ 拿到签名与 docstring
 execute_python(...)     ← 第一次可能报错
   ↓ 读 traceback
-get_api_help(symbol="...")
+api_read("...")         ← 对照签名
   ↓ 修正
 execute_python(...)     ← 成功
   ↓ 查询验证
@@ -89,7 +91,7 @@ execute_python(...)     ← 成功
 `execute_python` 返回 `ok=false` 时：
 
 1. 读 `exception.traceback`，定位是 API 名错、参数错还是逻辑错。
-2. API 名/参数不确定 → `get_api_help`。
+2. API 名/参数不确定 → `api_glob` / `api_grep` / `api_read`。
 3. 改代码重试。**一次失败不代表 OSIS 不支持。**
 4. 连续多次失败 → 把 traceback 关键部分给用户看，问是否换思路。
 

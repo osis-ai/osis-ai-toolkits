@@ -36,14 +36,15 @@ print(engine.model_summary())
 **用户**：给当前模型创建一个 XXX 类型单元。
 
 ```text
-get_api_help("创建梁单元")
-→ {"ok":true,"results":[
-     {"symbol":"create_beam3d","qualname":"ElementManager.create_beam3d",
-      "kind":"method",
-      "signature":"(self, no: 'int | None', node1: 'int', node2: 'int', mat: 'int', sec1: 'int', sec2: 'int', ...)",
-      "summary":"创建梁柱单元…"},
-     …
-   ],"index":{"entries":1074,…},"hint":"用 symbol= 精确查询可拿到完整签名…"}
+api_glob("engine.element.create_*")
+→ {"ok":true,"total":5,"truncated":false,"matches":[
+     "ElementManager.create_beam3d(self, no: 'int | None', node1: 'int', node2: 'int', mat: 'int', sec1: 'int', sec2: 'int', ...)  # 创建梁柱单元…",
+     …]}
+
+api_read("ElementManager.create_beam3d")
+→ {"ok":true,"symbol":{"qualname":"ElementManager.create_beam3d","signature":"…",
+     "doc":"…","params":[…],"source":"pyosis.element.manager:…"},
+   "paths":["engine.element.create_beam3d"]}
 
 execute_python("A81F", "
 from pyosis import OSISEngine
@@ -51,7 +52,7 @@ engine = OSISEngine()
 engine.element.create_beam3d(no=901, node1=1, node2=2, mat=1, sec1=1, sec2=1)
 print('created', 901)
 ")
-→ 若 ok=false，读 exception.traceback，get_api_help(symbol='ElementManager.create_beam3d') 后修正重试
+→ 若 ok=false，读 exception.traceback，对照 api_read 的签名修正重试
 ```
 
 ## 4. 多实例：改指定模型
@@ -63,7 +64,7 @@ list_instances()
 → A81F / D:/bridge.sis   ready
 → B92D / C:/project/tower.sis   busy
 
-get_api_help("修改材料参数")
+api_grep("弹性模量")                ← 定位材料相关 API，再 api_read
 execute_python("A81F", "...")     ← 全程只用 A81F
 execute_python("A81F", "从模型读回材料验证 ...")
 → 报告：在 bridge.sis 上改了 C30 → C40，已读回确认
@@ -78,7 +79,7 @@ list_instances()
 → 两个实例，project 分别是 bridge.sis / tower.sis，无法判断
 ```
 
-用普通文本问（**不要**用 OpenCode 的 `question` 工具）：
+用提问工具问（宿主没有就普通文本）：
 
 > 当前有两个 OSIS 模型：`bridge.sis`(D:/bridge.sis) 和 `tower.sis`(C:/project/tower.sis)。你要改哪一个？
 
@@ -89,7 +90,7 @@ execute_python("A81F", "engine.element.create_beam3d(no=1, node1=1, node2=2, mat
 → ok=false, exception.type="TypeError",
   exception.message="create_beam3d() missing 1 required positional argument: 'sec2'"
 
-get_api_help(symbol="ElementManager.create_beam3d")
+api_read("ElementManager.create_beam3d")
 → 补上 sec2
 
 execute_python("A81F", "修正后的脚本")

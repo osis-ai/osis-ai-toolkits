@@ -1,0 +1,3 @@
+source: osis-skill-enhance/.agents/skills
+commit: 8717b1335ddf297686b371ec890344e50e0ec0c0
+skills: osis-auto-testconformance osis-bridge-cantilever-box osis-bridge-conventional-box osis-bridge-hollow-slab osis-bridge-precast-small-box osis-bridge-precast-t-girder osis-bridge-rigid-frame-box osis-calcbook osis-check osis-customize-osisai osis-edit-hmid osis-engine osis-module-analysis osis-module-boundary osis-module-control osis-module-element osis-module-loadcase osis-module-material osis-module-node osis-module-rebar osis-module-section osis-module-stage osis-module-tendon osis-python-helper osis-screenshot-check

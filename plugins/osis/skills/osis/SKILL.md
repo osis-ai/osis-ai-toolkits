@@ -6,20 +6,20 @@ description: OSIS 桥梁有限元建模的总入口（Codex / Claude Code 版）
 # osis — OSIS Agent 总入口
 
 > 你通过 **OSIS Agent Broker**（本机 `http://127.0.0.1:18080`）操作 OSIS。
-> 你**永远不需要**知道 OSIS 实例的真实端口，也不需要本机安装 Python 或启动本地 MCP 子进程。
+> 实例列表里能直接看到端口字段（仅作信息展示）；但**连接与操作永远走 Broker**——用 `instance_id` / `execute_python`，不写直连端口的代码。
 >
 > `execute_python` 的执行模型：Broker 起 OSIS 官方 Python 子进程，子进程请求经
-> **Broker 的指定实例路由**（`/instances/{instance_id}/`）转发到目标实例，由 Broker
-> 逐请求注入实例身份。**不要**让生成的 Python 自己选默认目标、填实例 ID 或真实
-> 端口 —— 目标完全由 `execute_python(instance_id=...)` 决定。
+> **Broker 的指定实例路由**（`/instances/{instance_id}/`）转发到目标实例。
+> **不要**让生成的 Python 自己填实例 ID 或真实端口 —— 目标完全由
+> `execute_python(instance_id=...)` 决定。
 
-## 0. 五个 MCP 工具
+## 0. MCP 工具
 
 | 工具 | 用途 |
 |---|---|
 | `list_instances` | 列出当前可用的 OSIS 实例 |
 | `get_instance_info` | 查单个实例的项目、版本、状态，操作前二次确认 |
-| `get_api_help` | 查真实的 OSIS Python API 文档（签名/参数/返回值/示例） |
+| `api_glob` / `api_grep` / `api_read` | 查真实的 pyosis API —— 像 glob / grep / read 一样用（§1.2） |
 | `execute_python` | 在指定实例里执行 Python —— 核心工具 |
 | `raw_http_request` | 高级兼容入口，透传 OSIS HTTP API。**默认不用** |
 
@@ -40,7 +40,7 @@ OSIS Agent Broker 当前不可连接。
 list_instances  →  确定 instance_id
       ↓
 判断是否熟悉该 API
-      ├─ 不确定 ──→ get_api_help(query / symbol)
+      ├─ 不确定 ──→ api_glob / api_grep 定位 → api_read 看全文
       ↓
 生成尽量短且明确的 Python
       ↓
@@ -49,7 +49,7 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
              instance_id="default" → 当前默认实例(与手写 18080 直连同目标)
       ↓
 读 stdout / result / exception
-      ├─ 有 exception → 修代码（必要时 get_api_help）→ 重试
+      ├─ 有 exception → 修代码（必要时 api_read）→ 重试
       ↓
 修改型任务：再查一次并验证结果
       ↓
@@ -63,7 +63,7 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
 - 多个实例 → 优先按 `project`、`window_title`、`state` 判断用户指的是哪个。
 - 仍有歧义 → **必须问用户**，禁止随便挑一个。
 - 实例重启后 `instance_id` 会变，**旧 ID 不得自动映射**到新实例；ID 失效就重新 `list_instances`。
-- 不要向用户暴露或记录 OSIS 真实端口。
+- 端口字段可见，但不要主动向用户罗列；操作一律经 Broker（`instance_id` 路由 / `execute_python`），不绕过 Broker 直连。
 - **没有启动任何 OSIS 实例也可以干活**：一次性求解（仅求解器模式）用魔法值
   `instance_id="solver"`，见 §1.4；`list_instances` 为空时不必让用户先开 OSIS。
 - **魔法值 `instance_id="default"`**（大小写不敏感）= 路由到当前默认实例，
@@ -74,13 +74,15 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
 **不允许猜测 OSIS API 名称。** 不确定就先查：
 
 ```text
-get_api_help("创建梁单元")
-get_api_help(symbol="ElementManager.create_beam3d")
+api_glob("engine.element.create_*")       列成员 / 按名找(fnmatch,不区分大小写)
+api_grep("梁单元")                         正则逐行搜签名与 docstring,中文概念用它
+api_read("engine.element.create_beam3d")  单个 API 全文:签名、参数、docstring、源码位置
 ```
 
-- `query` 支持中文自然语言（索引来自真实 `pyosis` 包的 docstring）。
-- `symbol` 用于已知符号的精确查询，返回完整签名、参数含义、返回值、示例、相关 API。
-- 查不到会返回 `API_HELP_NOT_FOUND` 和相近符号建议 —— 换个说法或改用 `symbol`，**不要因此断言 OSIS 不支持该功能**。
+- 索引来自 OSIS 执行环境里真实 `pyosis` 包的签名与 docstring，与 `execute_python` 跑的版本一致。
+- `api_glob` 同时匹配限定名（`NodeManager.*`）和访问路径（`engine.tendon.prop.*`）；返回 `限定名(签名)  # 首行说明`。
+- `api_read` 接受限定名、`engine.x.y` 路径、唯一短名；类会附成员列表。
+- 同名歧义（如 `create`）或找不到 → `API_HELP_NOT_FOUND` + `candidates`，从中挑限定名再读；**不要因此断言 OSIS 不支持该功能**。
 
 ### 1.3 写 Python
 
@@ -104,6 +106,10 @@ execute_python(instance_id="A81F", code="...", timeout=60)
 execute_python(instance_id="A81F", file="py/prep/main.py", cwd="D:/proj")  ← 跑已有脚本
 ```
 
+- **两条执行通道**：领域 Skill 里写的终端 `python xxx.py`（如 `python <project_dir>/py/prep/main.py`）
+  可以照做——本机 pyosis 默认连 18080，即 Broker，落到**默认实例**；
+  **多实例、或需要指定目标实例时，一律改用 `execute_python(instance_id=...)`**。
+  不碰 OSIS 的纯本地脚本（`seedtpl.py`、`docx_tool.py` 等）直接终端跑。
 - `code` / `file` 二选一；`file` 相对 `cwd` 解析。
 - `cwd` 默认 `~/.osisai`：涉及相对路径读写、同级模块导入、跑工程目录下的脚本时，
   显式传工程目录；不确定就用默认。
@@ -177,7 +183,7 @@ engine.solve()
 ## 2. 铁律
 
 1. 不要猜测 OSIS API 名称。
-2. 不确定 API 时先调 `get_api_help`。
+2. 不确定 API 时先用 `api_glob` / `api_grep` / `api_read` 查。
 3. 所有操作明确使用 `instance_id`。
 4. 多实例有歧义时询问用户。
 5. 优先通过 Python API 完成复杂操作。
@@ -185,7 +191,7 @@ engine.solve()
 7. 修改模型后尽量查询并验证结果。
 8. Python 异常时读取 traceback 后修正。
 9. 不要因为一次失败就假设 OSIS 不支持该功能。
-10. 不需要知道、也不要向用户暴露 OSIS 真实 HTTP 端口。
+10. 端口信息可见（列表里就有），但连接与操作一律经 Broker 路由——不写绕过 Broker 直连真实端口的代码，也不主动向用户罗列端口。
 
 ## 3. 错误码与应对
 
@@ -199,9 +205,9 @@ engine.solve()
 | `INSTANCE_NOT_READY` | 实例 `starting`/`closing`，稍后重试或询问用户 |
 | `INSTANCE_MISMATCH` | 上游返回 409+INSTANCE_MISMATCH（**兼容性错误**：当前 OSIS 不再校验、不会发送）→ 重新 `list_instances` 再试 |
 | `EXECUTION_TIMEOUT` | 脚本超时，拆小任务或加大 `timeout` 后重试 |
-| `PYTHON_ERROR` | 读 traceback，改代码（必要时 `get_api_help`）后重试 |
+| `PYTHON_ERROR` | 读 traceback，改代码（必要时 `api_read` 看签名）后重试 |
 | `OSIS_HTTP_ERROR` | OSIS 侧返回非 2xx，看响应内容判断是参数问题还是实例问题 |
-| `API_HELP_NOT_FOUND` | 换关键词或用 `symbol` 精确查；不要断言不支持 |
+| `API_HELP_NOT_FOUND` | 看 `candidates`（歧义/近似名），或换 `api_glob` / `api_grep` 再找；不要断言不支持 |
 
 ## 4. 建模领域知识在哪
 
@@ -212,16 +218,16 @@ engine.solve()
 | 任务分类、桥型路由、模块编排、写回规范 | `osis-engine` |
 | 六种桥型方案（节点序列、组名、阶段） | `osis-bridge-*` |
 | 模块层 API 用法与约束（`_1`..`_10`） | `osis-module-*` |
-| pyosis API 现场查询（`pyosis_doc.py`） | `osis-python-helper` |
+| pyosis 关键坑；无 `api_*` 工具时的 `pyosis_doc.py` | `osis-python-helper` |
 | 荷载组合与规范验算 | `osis-check` |
 | 生成计算书 | `osis-calcbook` |
 
-这些 Skill 里出现的 `question` 工具、WeKnora MCP 工具（`list_knowledge_bases` / `hybrid_search` / `bridge_search_templates` / `download_bridge_template`）、`%OSIS_EXTRA_CONFIG_DIR%`、`osis-memory` 等是 OpenCode 专属，在 Codex / Claude Code 中**不可用**：
+这些 Skill 与 OSIS-AI 共用同一份源，写法宿主中立：
 
-- 需要反问用户 → 直接用普通文本提问。
-- 需要查 API → 用本 Skill 的 `get_api_help`。
-- 需要读 skill 附带的参考文件 → 直接读本插件 `skills/` 下的路径。
-- 需要执行 Python → 一律走 `execute_python`，不要在本地 shell 里跑 `python`。
+- 「提问工具」= 你所在宿主自带的结构化提问工具；没有就用普通文本列选项。
+- WeKnora 知识库工具由本插件的 `weknora` MCP 提供（工具名带宿主前缀，按后缀认）；不可用时按 `osis-engine` 降级走 `seedtpl`。
+- `<skill_dir>` = 对应 SKILL.md 所在目录。
+- 领域 Skill 里的「查 API」一律用本插件的 `api_glob` / `api_grep` / `api_read`。
 
 ## 5. 参考资料
 

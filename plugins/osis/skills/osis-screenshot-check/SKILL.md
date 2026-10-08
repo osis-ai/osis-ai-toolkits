@@ -31,11 +31,6 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 
 ## 1. 建立运行上下文
 
-> **执行方式**：本 Skill 所有 `python ...` 命令一律改用 `execute_python(code=...)` +
-> `sys.argv` + `runpy.run_path` 执行（配方见核心 `osis` SKILL §1.4），不要在本地
-> shell 跑 `python`。`cwd` 传 `project_dir`；下文中 `--xxx "<值>"` 参数原样放进
-> `sys.argv = ["<脚本名>", "--xxx", "<值>", ...]`。
-
 - 规范化 `project_dir`，创建并复用唯一 `run_dir`。
 - 在任何视图或截图动作前执行：
 

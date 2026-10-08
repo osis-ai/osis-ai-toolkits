@@ -49,12 +49,6 @@ def test_codex_mcp_config():
     assert srv["url"] == f"http://127.0.0.1:{BROKER_PORT}{MCP_PATH}"
 
 
-def test_codex_compat_overlay():
-    m = load(".codex-plugin/plugin.json")
-    assert m["name"] == "osis"
-    assert m.get("skills") in (None, "./skills/")
-
-
 def test_codex_marketplace():
     mk = repo_load(".agents/plugins/marketplace.json")
     assert mk["name"] == "osis-ai-toolkits"
@@ -117,6 +111,15 @@ def test_mcp_endpoints_agree():
     assert a == b, "Codex 与 Claude 必须连同一个 Broker endpoint"
 
 
+def test_mcp_servers_agree():
+    """两侧 MCP 只差格式(type 写法),server 集合与 stdio 启动方式必须一致。"""
+    a, b = load("mcp.json")["mcpServers"], load(".mcp.json")["mcpServers"]
+    assert a.keys() == b.keys()
+    for name in a:
+        for key in ("command", "args", "env"):
+            assert a[name].get(key) == b[name].get(key), f"{name}.{key} 两侧不一致"
+
+
 def test_broker_port_consistent_across_repo():
     """端口写死在多处,必须一致(改端口要全部同步)。"""
     expected = f"127.0.0.1:{BROKER_PORT}"
@@ -153,7 +156,7 @@ def test_core_skill_frontmatter():
 
 def test_core_skill_declares_all_tools():
     text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
-    for tool in ("list_instances", "get_instance_info", "get_api_help", "execute_python"):
+    for tool in ("list_instances", "get_instance_info", "api_glob", "api_grep", "api_read", "execute_python"):
         assert tool in text, f"核心 skill 未提及 {tool}"
 
 
@@ -162,7 +165,7 @@ def test_core_skill_covers_required_rules(  # 开发要求 §12 十条铁律
     text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
     checks = {
         "不要猜测 API": "猜测 OSIS API",
-        "先查 API": "先调 `get_api_help`",
+        "先查 API": "不确定 API 时先用",
         "显式 instance_id": "instance_id",
         "多实例询问": "歧义",
         "Python 优先": "Python",
@@ -196,7 +199,6 @@ def test_expected_layout():
         "plugin.json",
         "mcp.json",
         ".mcp.json",
-        ".codex-plugin/plugin.json",
         ".claude-plugin/plugin.json",
         "README.md",
         "skills/osis/SKILL.md",
@@ -206,20 +208,39 @@ def test_expected_layout():
         assert (REPO_ROOT / rel).exists(), f"缺少 {rel}"
 
 
-def test_core_skill_documents_opencode_substitutions():
-    """核心 skill 必须说明 OpenCode 专属内容在本宿主的替代方式(§4)。
+# ---------------------------------------------------------------- 领域 skill 单向同步
 
-    这些名字**应该**出现在 skill 里(作为「不可用 → 用什么代替」的映射表);
-    真正要防的是 skill 指示去调用它们。因此断言存在,而不是不存在。
-    """
-    text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
-    for token in ("question", "list_knowledge_bases", "%OSIS_EXTRA_CONFIG_DIR%", "osis-memory"):
-        assert token in text, f"核心 skill 未说明 {token} 在本宿主的替代方式"
-    assert "不可用" in text
-    # 并且给出了正确的替代动作
-    assert "普通文本提问" in text
-    assert "get_api_help" in text
-    assert "execute_python" in text
+
+SRC_SKILLS = REPO_ROOT.parent / "osis-skill-enhance" / ".agents" / "skills"
+
+
+def _tree(root: Path) -> dict[str, bytes]:
+    # 统一换行:两个仓库的 autocrlf / .gitattributes 可能不同
+    return {
+        p.relative_to(root).as_posix(): p.read_bytes().replace(b"\r\n", b"\n")
+        for p in root.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts
+    }
+
+
+def test_synced_skills_recorded():
+    stamp = (PLUGIN_ROOT / "skills" / ".synced-from").read_text(encoding="utf-8")
+    names = stamp.split("skills:", 1)[1].split()
+    assert "osis-l0-hot" not in names and "osis" not in names
+    for n in names:
+        assert (PLUGIN_ROOT / "skills" / n / "SKILL.md").is_file(), n
+
+
+def test_synced_skills_match_source():
+    """插件侧不许手改领域 skill:改源仓库再跑 scripts/sync_skills.py。"""
+    if not SRC_SKILLS.is_dir():
+        pytest.skip("未检出 osis-skill-enhance,跳过同步一致性检查")
+    stamp = (PLUGIN_ROOT / "skills" / ".synced-from").read_text(encoding="utf-8")
+    stale = []
+    for n in stamp.split("skills:", 1)[1].split():
+        if _tree(SRC_SKILLS / n) != _tree(PLUGIN_ROOT / "skills" / n):
+            stale.append(n)
+    assert not stale, f"与源仓库不一致(先跑 scripts/sync_skills.py): {stale}"
 
 
 # ---------------------------------------------------------------- 可选:连通性

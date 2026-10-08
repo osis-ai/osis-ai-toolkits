@@ -11,7 +11,7 @@ description: 验算结果检查分析工具。当用户需要(1)查看验算结�
 用户请求
     │
     ▼
-生成组合并验算（如未验算过）
+先求解，再生成组合并验算（如未验算过）
     │
     ▼
 导出验算结果
@@ -25,21 +25,23 @@ description: 验算结果检查分析工具。当用户需要(1)查看验算结�
     └── 是 → 进入修改流程
 ```
 
-在调用此 SKILL 之前，**项目必须已构建并求解完成**。如尚未验算，先执行步骤1；如已验算过，跳过步骤1直接从步骤2导出结果。
+在调用此 SKILL 之前，**项目必须已构建，并且在当前这份模型上求解过**。`prep/main.py` 只重建，不产生工况结果和活载包络。如尚未验算，先执行步骤1；如已验算过且模型没再改过，跳过步骤1直接从步骤2导出结果。
 
-> **定位项目目录**：用 `execute_python(instance_id=..., code="from pyosis.core.engine import OSISEngine; print(OSISEngine().project.get_directory())")` 获取 OSIS 打开的项目目录，所有文件操作基于此路径。
+> **定位项目目录**：执行 `python -c "from pyosis.core.engine import OSISEngine; print(OSISEngine().project.get_directory())"` 获取 OSIS 打开的项目目录，所有文件操作基于此路径。
 
-## 步骤1：生成组合并验算
+## 步骤1：先求解，再生成组合并验算
 
-用户**未说明如何验算**时：
+`CombinationAndCheck` 用的是已经算好的工况结果和包络，自己不求解。未求解就调用，OSIS 报「未定义包络/工况类型」。这不是工况类型没写。
 
-```text
-execute_python(instance_id=..., code="from pyosis import OSISEngine; OSISEngine().post.combination_and_check()")
+用户**未说明如何验算**时，先 `solve()`，再组合验算：
+
+```bash
+python -c "from pyosis import OSISEngine; e=OSISEngine(); e.solve(); e.post.combination_and_check()"
 ```
 
-（`combination_and_check` 由 `PostManager` 提供,无参数）
+模型在求解之后又改过（含 `main.py` 重建），必须重新 `solve()`，不能沿用上一次的包络。
 
-用户如果说明他**已在 OSIS 中进行了验算**，跳过此步。
+用户如果说明他**已在 OSIS 中进行了验算**，且之后没有再改模型，跳过此步。
 
 ## 步骤2：导出验算结果
 
@@ -49,10 +51,17 @@ from pyosis import OSISEngine
 engine = OSISEngine()
 results = engine.result.check_all()
 for name, df in results.items():
-    ok = len(df)
-    ng = sum(1 for row in df.itertuples(index=False) for v in row if 'NG' in str(v))
-    print('{name}: {status}  ({ok} 项, NG={ng})'.format(name=name, status='NG' if ng else 'OK', ok=ok, ng=ng))
+    result_col = next((c for c in df.columns if str(c).strip() == '结果'), None)
+    if result_col is None:
+        raise ValueError(f'{name} 缺少结果列')
+    values = df[result_col].astype(str).str.strip()
+    ok = int(values.str.contains('OK', na=False).sum())
+    ng = int(values.str.contains('NG', na=False).sum())
+    status = 'EMPTY' if len(df) == 0 else ('NG' if ng else 'OK')
+    print('{name}: {status}  ({ok} 项, NG={ng})'.format(name=name, status=status, ok=ok, ng=ng))
 ```
+
+`EMPTY` 表示导出 0 行，不能视为通过；若是用户点名的目标验算项，先确认已在当前模型上求解，再继续分析或修复。
 
 如果用户没有太具体要求，只让生成报告，直接参考示例把所有验算结果全导出并大致过一遍即可，尽快将报告生成出来。如果有具体需求，再参考其他脚本进行细致的分析：
 
@@ -85,7 +94,7 @@ for name, df in results.items():
 ### 用户要求修改/优化/调整
 
 1. 确认项目画像存在（不存在建议先创建）
-2. 规划任务列表（todowrite）
+2. 规划任务列表（用宿主的任务列表工具,如 todowrite）
 3. 导出验算结果，分析 NG 项原因
 4. 查看 py/ 模块文件获取模型信息
 5. 若存在 `py/reason_codes.yaml`（或本 skill `references/reason_codes.yaml`），定位原因时 **reason_code 必须用其中的短码**，不要自造
@@ -129,7 +138,7 @@ for name, df in results.items():
 
 | 场景 | Skill |
 |------|-------|
-| 验算前必须先完成组合 | 本 skill |
+| 验算前必须先求解，再组合 | 本 skill |
 | 截面承载力不足，需增大截面 | `osis-module-section` |
 | 预应力不满足，需调整钢束 | `osis-module-tendon` |
 | 配筋不足或过大 | `osis-module-rebar` |

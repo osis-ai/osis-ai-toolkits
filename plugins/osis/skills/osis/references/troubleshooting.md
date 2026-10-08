@@ -61,14 +61,15 @@ OSIS Agent Broker 当前不可连接。
 
 | 现象 | 处理 |
 |---|---|
-| `AttributeError` / `NameError`（API 名错） | `get_api_help` 查正确名字 |
-| `TypeError` / `missing positional argument` | `get_api_help(symbol=...)` 看签名 |
+| `AttributeError` / `NameError`（API 名错） | `api_glob("ClassName.*")` 列出真实成员 |
+| `TypeError` / `missing positional argument` | `api_read(...)` 看签名 |
 | `XxxError: 组不存在` | 组名逐字一致问题，见 `osis-engine` 的组名约束 |
 | `clear()` 后模型空了 | 误跑 `main.py`；查询任务不要跑写回 |
 
 ## `API_HELP_NOT_FOUND`
 
-- 换更通用的中文关键词，或改用 `symbol` 精确查。
+- 歧义 / 近似名 → 看 `detail.candidates`，挑限定名再 `api_read`。
+- 无命中 → 放宽 `api_glob` 通配（`*关键词*`）或换 `api_grep` 关键词（中文概念、正则 `a|b`）。
 - 索引基于本机 `pyosis`；若版本与 OSIS 不符，说明 `~/.osisai/.venv` 里的 `osis-python` 需要更新（跑 `runtime-bootstrap`）。
 - **不要**据此断言 OSIS 不支持该功能。
 
@@ -82,12 +83,8 @@ OSIS 侧返回非 2xx。看响应体：多为参数不合法或当前状态不�
 - 修改是否写回了？改 `.py` 不等于改模型 —— 检查是否执行了写回。
 - 是否连错了实例？`get_instance_info` 复核 `project`。
 
-## Skill 里提到的工具不存在
+## Skill 里提到的工具不可用
 
-原 skill 写给 OpenCode。以下在 Codex / Claude Code 中**没有**，按 `SKILL.md §4` 的替代方式处理：
-
-- `question` → 普通文本提问
-- WeKnora MCP（`list_knowledge_bases` / `hybrid_search` / `bridge_search_templates` / `download_bridge_template`）→ `get_api_help`，或读 skill 自带的 `scripts/`、`references/templates/`
-- `osis-memory` → 直接读写 `~/.osisai/memory/PROFILE.md`
-- `%OSIS_EXTRA_CONFIG_DIR%` → 本插件安装目录下的 `skills/`
-- 本地 `python xxx.py` → `execute_python`
+- WeKnora 工具连不上 / 无命中 → 按 `osis-engine` §模板优先策略 降级跑 `seedtpl`；查 API 本来就走 `api_*`，不受影响
+- 没有 `osis-memory` 工具 → 按需读写 `~/.osisai/memory/PROFILE.md`
+- 宿主没有结构化提问工具 → 普通文本列出选项

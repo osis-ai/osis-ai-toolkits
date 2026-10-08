@@ -3,6 +3,16 @@ from pathlib import Path
 from pyosis import OSISEngine
 
 
+def count_results(df) -> tuple[int, int]:
+    result_col = next((c for c in df.columns if str(c).strip() == '结果'), None)
+    if result_col is None:
+        raise ValueError('验算结果缺少「结果」列')
+    values = df[result_col].astype(str).str.strip()
+    ok = int(values.str.contains('OK', na=False).sum())
+    ng = int(values.str.contains('NG', na=False).sum())
+    return ok, ng
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='按 .lcc 文件名或模式加载 OSIS 验算结果')
     group = parser.add_mutually_exclusive_group(required=True)
@@ -23,8 +33,9 @@ def load_single(engine: OSISEngine, target: str) -> None:
         raise ValueError('文件名格式不符，需为 sheetType_checkItem_checkName')
 
     df = engine.result.check(*parts)
-    ng = sum(1 for row in df.itertuples(index=False) for v in row if 'NG' in str(v))
-    print(f'{target}: OK={len(df)-ng}, NG={ng}, 总行数={len(df)}')
+    ok, ng = count_results(df)
+    status = 'EMPTY' if len(df) == 0 else ('NG' if ng else 'OK')
+    print(f'[{status}] {target}: OK={ok}, NG={ng}, 总行数={len(df)}')
     print(df.to_string(max_rows=50, index=False))
 
 
@@ -46,9 +57,9 @@ def load_pattern(engine: OSISEngine, pattern: str) -> None:
             continue
         try:
             df = engine.result.check(*parts)
-            ng = sum(1 for row in df.itertuples(index=False) for v in row if 'NG' in str(v))
-            status = 'NG' if ng else 'OK'
-            print(f'[{status}] {f.stem}: OK={len(df)-ng}, NG={ng}')
+            ok, ng = count_results(df)
+            status = 'EMPTY' if len(df) == 0 else ('NG' if ng else 'OK')
+            print(f'[{status}] {f.stem}: OK={ok}, NG={ng}')
         except Exception as exc:
             print(f'[ERR] {f.stem}: {exc}')
 

@@ -6,7 +6,7 @@
 
 > 检查当前模型并帮我修改材料参数，然后运行计算。
 
-Agent 会自动：`list_instances` → （必要时）`get_api_help` → `execute_python` → 验证结果 → 报告。
+Agent 会自动：`list_instances` → （必要时）`api_glob`/`api_grep`/`api_read` → `execute_python` → 验证结果 → 报告。
 **你不需要知道任何 OSIS 实例的真实端口。**
 
 ```text
@@ -27,18 +27,18 @@ osis-ai-toolkits/
 ├── .claude-plugin/marketplace.json       Claude Code marketplace
 └── plugins/osis/
     ├── plugin.json            Codex 便携 manifest
-    ├── mcp.json               Codex MCP 配置
-    ├── .codex-plugin/plugin.json   Codex 兼容层
+    ├── mcp.json               Codex MCP 配置(osis Broker + weknora)
     ├── .claude-plugin/plugin.json  Claude Code manifest
-    ├── .mcp.json              Claude Code MCP 配置
-    ├── skills/                ← 唯一 Skill 源,Codex / Claude 共用
-    │   ├── osis/SKILL.md      核心入口(按开发要求 §12)
-    │   ├── osis-engine/       建模总控
-    │   ├── osis-bridge-*/     六种桥型方案
-    │   ├── osis-module-*/     模块层 API 与约束
-    │   └── ...
+    ├── .mcp.json              Claude Code MCP 配置(同上,格式不同)
+    ├── skills/                Codex / Claude 共用
+    │   ├── osis/SKILL.md      插件自有:Broker 用法入口
+    │   ├── osis-engine/       ┐
+    │   ├── osis-bridge-*/     │ 领域 skill:从 osis-skill-enhance
+    │   ├── osis-module-*/     │ 原样同步(scripts/sync_skills.py),
+    │   └── ...                ┘ 不要在本仓库手改
     ├── README.md
-    └── tests/                 manifest 与 Skill 校验
+    └── tests/                 manifest、同步一致性校验
+scripts/sync_skills.py         同步领域 skill
 ```
 
 > Broker（Python MCP 服务）在另一个仓库：**`osis-broker`**。
@@ -89,12 +89,16 @@ osis-broker\scripts\run_broker.bat --debug
 在别人机器上实时安装 Broker（**用 uv,不用系统 pip**）：
 
 ```bat
-uv pip install osis_broker-1.0.4-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
+uv pip install osis_broker-1.0.5-py3-none-any.whl     :: 由 osis-broker 仓库 uv build 产出
 osis-broker --debug
 :: 目标机器没有 pyosis 时:  uv pip install "osis-broker[pyosis]"
 ```
 
 正式发布阶段 Broker 随 OSIS 产品一起分发。
+
+**WeKnora 知识库**（桥梁模板检索，可选）：插件以 `python -m weknora_mcp_server` 启动，
+key 读环境变量 `WEKNORA_API_KEY`（Python 环境由 OSIS 环境初始化工具准备）。
+连不上时领域 skill 自动降级到本地 `seedtpl` 模板。
 
 **默认实例与失效规则**（手写脚本直接打 18080 时适用，详见 `osis-broker/docs/contract.md §2.4`）：
 
@@ -106,6 +110,14 @@ osis-broker --debug
 **CORS 实际策略**（与 `osis-broker/README.md` 一致）：精确白名单 + `127.0.0.1`/
 `localhost` 任意端口 + `osisbim.com` 子域；非白名单来源服务端 403；设置
 `OSIS_BROKER_TOKEN` 后跨源浏览器请求需 Bearer，同源 WebUI 与无 Origin 原生调用豁免。
+
+## 更新领域 skill
+
+领域 skill 的唯一源是 `osis-skill-enhance/.agents/skills`（与 OSIS-AI 共用）。在那边改完后：
+
+```bat
+python scripts\sync_skills.py
+```
 
 ## 测试
 

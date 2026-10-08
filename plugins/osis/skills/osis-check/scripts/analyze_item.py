@@ -24,20 +24,20 @@ def main() -> None:
         raise ValueError(f'文件名格式不符: {target}')
 
     df = engine.result.check(*parts)
-    ng_cols = [col for col in df.columns if df[col].astype(str).str.contains('NG', na=False).any()]
-
     print(f'## {target}')
     print(f'总行数: {len(df)}')
     print(f'列: {list(df.columns)}')
-    print(f'含 NG 的列: {ng_cols}')
+    if df.empty:
+        print('\nEMPTY: 验算结果为 0 行，不能视为通过')
+        return
 
-    if ng_cols:
-        print('\n### NG 详情:')
-        for col in ng_cols:
-            ng_mask = df[col].astype(str).str.contains('NG', na=False)
-            print(f'\n--- {col} (共 {ng_mask.sum()} 条) ---')
-            ng_df = df[ng_mask]
-            print(ng_df.to_string(max_rows=args.max_rows, index=False))
+    result_col = next((c for c in df.columns if str(c).strip() == '结果'), None)
+    if result_col is None:
+        raise ValueError('验算结果缺少「结果」列')
+    ng_mask = df[result_col].astype(str).str.strip().str.contains('NG', na=False)
+    if ng_mask.any():
+        print(f'\n### NG 详情（共 {int(ng_mask.sum())} 条）:')
+        print(df[ng_mask].to_string(max_rows=args.max_rows, index=False))
     else:
         print('\n全部通过')
 

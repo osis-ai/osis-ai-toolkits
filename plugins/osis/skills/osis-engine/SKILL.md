@@ -1,6 +1,6 @@
 ---
 name: osis-engine
-description: OSIS 桥梁建模的总控入口。判断任务类型、按受力体系路由桥型、编排模块加载顺序、维护建模状态、规范与 OSIS 软件的交互(状态化原则、清屏、求解、replot)、参数不足时用普通文本反问用户。当用户要从零建模、修改已有模型、在已有模型上加功能、求解、或建模报错需要定位时,先用本 SKILL。它只做编排与调度,不含具体建模 API、桥型特征、模块层规则。
+description: OSIS 桥梁建模的总控入口。判断任务类型、按受力体系路由桥型、编排模块加载顺序、维护建模状态、规范与 OSIS 软件的交互(状态化原则、清屏、求解、replot)、参数不足时用提问工具反问用户。当用户要从零建模、修改已有模型、在已有模型上加功能、求解、或建模报错需要定位时,先用本 SKILL。它只做编排与调度,不含具体建模 API、桥型特征、模块层规则。
 ---
 
 # osis-engine
@@ -20,21 +20,25 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 | 任何任务的总入口(必先加载) | `osis-engine` |
 | 桥型方案(由本文件路由) | `osis-bridge-{bridge_type}` |
 | 写 `_1`..`_10` 任意模块 | 对应 `osis-module-{module_type}` |
-| 模板匹配 | 本文件 §模板优先策略(直接跑 `seedtpl`),各 bridge `references/templates/` |
+| 模板匹配 | 本文件 §模板优先策略(WeKnora 优先,失效再 `seedtpl`),各 bridge `references/templates/` |
 | 荷载组合与规范验算 | `osis-check` |
 | 生成计算书 | `osis-calcbook` |
-| pyosis API 用法(优先 MCP `get_api_help`,降级 `pyosis_doc.py`) | `osis-python-helper` |
+| pyosis API 用法(MCP `api_glob`/`api_grep`/`api_read`,无则 `pyosis_doc.py`) | `osis-python-helper` |
 | 改跨中梁高 / h_mid | `osis-edit-hmid` |
 | 建模完成后构造正确性自动评测 | `osis-auto-testconformance` |
 | 自定义插件、用户/官方 skill、模型入库 | `osis-customize-osisai` |
 
-## 会话硬约束(AGENTS 铁律的细则)
+## 会话硬约束
 
+- **先总控再下游**:未加载本 SKILL 不得直接开写模块或猜桥型
+- **改了必须执行**:改 `.py` ≠ 模型已变,创建或修改的代码必须直接执行写回(用户明确要求 dry-run 除外);OSIS 在代码调用时已保存结果,同一份代码不要重复执行
+- **API 不确定先查**:禁止凭印象猜,查法见 §与 OSIS 软件交互
+- **当前工程目录**:上下文已给出就用;否则执行 `python -c "from pyosis import OSISEngine; print(OSISEngine().project.get_directory())"` 读取。下文 `<project_dir>` / `get_directory()` 均指它
 - **默认求快**:用户没另说时走最快路径——能复制模板不构思、能最小 diff 不重排;未指定参数用模板/桥型默认,完工报告列假设请用户纠正,不逐项反问。改了 `py/` 的写回一律 `main.py`,不因求快改走局部命令。求快不裁四样:**算术闭合自检**、**构造评测**(本条末)、**桥型歧义时的澄清**、**对不上六种支持桥型时的提示**
 - **只动 `py/`**:不创建/修改/删除 `image/` `Check/` `Result/` `secmesh/` 等 OSIS 自动目录
 - **改模型必改画像**:同步更新 `项目画像.md`,字段缺失留 `<!-- TODO -->`
 - **组名逐字一致**:`_6` 组名被 `_8`/`_9`/`_10` 引用,差字符报"组不存在"
-- **用户记忆**:直接读写 `~/.osisai/memory/PROFILE.md`(OpenCode 的 `osis-memory` 工具在本宿主不存在)
+- **用户记忆**:有 `osis-memory` 工具就用;否则按需读写 `~/.osisai/memory/PROFILE.md`
 - **构造评测**:完整建模(含直接复制/小修)完成后自动调 `osis-auto-testconformance`,总分/评级/偏差项写入完工报告,是否按偏差调整由用户定。"越快越好"不压缩评测
 
 ## 接到任务后,先做这些
@@ -65,7 +69,7 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 - 常规现浇箱梁(整跨支架现浇、无体系转换,含匝道) → `osis-bridge-conventional-box`
 - 预制简支空心板(开口空心截面,中小跨) → `osis-bridge-hollow-slab`
 
-**完整建模**时:对得上六种之一 → 直接加载。六种之间歧义(如箱梁 vs 刚构) → 澄清,不要臆测。对不上任何一种 → **先**用普通文本提示:套现有骨架可能建不对。options 为六种各一项 +「仍按最接近的类型试(不保证正确)」+「先不建」。选六种之一则按该项路由;选仍要试则路由最接近的一种,完工报告写明「非支持桥型、按××试建、不保证正确」;选先不建则停止。不要不提示就硬套。
+**完整建模**时:对得上六种之一 → 直接加载。六种之间歧义(如箱梁 vs 刚构) → 澄清,不要臆测。对不上任何一种 → **先**用提问工具提示:套现有骨架可能建不对。options 为六种各一项 +「仍按最接近的类型试(不保证正确)」+「先不建」。选六种之一则按该项路由;选仍要试则路由最接近的一种,完工报告写明「非支持桥型、按××试建、不保证正确」;选先不建则停止。不要普通文本提问,不要不提示就硬套。
 
 局部修改 / 求解 / 失败修复不走这道闸。
 
@@ -103,29 +107,30 @@ _1 控制 → _2 几何属性 → _3 材料 → _4 截面 → _5 节点
 
 ## 模板优先策略(完整建模)
 
-路由桥型后**跑 `seedtpl.py` 拉模板**(OpenCode 的 WeKnora 知识库工具在 Codex / Claude Code 中不存在,直接走 §2)。落盘目标一律当前工程 `get_directory()/py/`(`prep/` + 同级 `项目画像.md`)。`py/prep` 已有模型时先读画像说明现有桥型,问是否覆盖;未确认不要下、不要 `seedtpl --force`。
+路由桥型后**先 WeKnora 下载,失败再自己跑 `seedtpl.py`**。落盘目标一律当前工程 `get_directory()/py/`(`prep/` + 同级 `项目画像.md`)。`py/prep` 已有模型时先读画像说明现有桥型,问是否覆盖;未确认不要下、不要 `seedtpl --force`。
 
-### 1. WeKnora —— 本宿主不可用
+### 1. WeKnora(优先)
 
-WeKnora 知识库 MCP(`weknora_` 前缀的 `list_knowledge_bases` / `hybrid_search` / `bridge_search_templates` / `download_bridge_template`)是 **OpenCode 专属**,在 Codex / Claude Code 中不存在。
+工具名可能带宿主前缀(如 `weknora_`、`mcp__weknora__`),按后缀认。
 
-**不要尝试调用这些工具名,直接跳到 §2 seedtpl。**
+1. `list_knowledge_bases` → 选桥梁模板/案例库(条目路径含 `02-案例库`),记下 `kb_id`。不要把 SKILL 列表或 pyosis 库当成模板库。
+2. `bridge_search_templates`(kb_id, query=用户原话或「桥型 + 跨径」)
+3. 命中案例后 `download_bridge_template`(kb_id, case_query=案例目录名, dest_dir=`get_directory()/py/`)。该工具把 `prep-md/*.py.md` 拆成真正的 `.py`,文件直接写在当前工程 `py/` 下。
+4. 读 `py/项目画像.md` 核对跨径/材料,再按下表匹配度动作。
 
-### 2. seedtpl
+下列任一情况视为 WeKnora 失效,立刻改走 §2,不要空等、不要手搓:`MCP 不可用或超时` / `list_knowledge_bases` 没有模板库 / 搜索无命中 / 下载报错 / `written_files` 空。
 
-由主会话直接用终端跑脚本。`<插件>` 指本插件的安装根目录:用你读到的本 SKILL.md 所在目录向上两级;Claude Code 里也可直接写 `${CLAUDE_PLUGIN_ROOT}/skills/osis-engine/`。
+### 2. seedtpl(降级)
+
+只在 WeKnora 失效时,由主会话直接在终端跑本 SKILL 的脚本(`<skill_dir>` = 本 SKILL.md 所在目录):
 
 ```bash
-python "<插件>/skills/osis-engine/scripts/seedtpl.py" --spec "<用户原话>"
+python "<skill_dir>/scripts/seedtpl.py" --spec "<用户原话>"
 ```
 
 stdout 的 `共 N 个模板: [...]` 即全量名单;**未报全量不得宣布命中/近邻**。N 对不上或名单像截断 → 再跑,或 `ls` 当前桥型 `references/templates/`。只查本桥型平铺目录(没有 `<桥型>/<跨径>` 两级)。
 
-悬浇三跨只改跨径(近似命中、节段对数相同):不要手改 `_5`/`_2`,跑 `spanremap`,看 stdout 校核。失败则换同构近邻。
-
-```bash
-python "<插件>/skills/osis-engine/scripts/spanremap.py" --to "<目标跨径>"
-```
+悬浇三跨只改跨径(近似命中、节段对数相同):不要手改 `_5`/`_2`,按 `osis-bridge-cantilever-box` 跑它的 `spanremap`,看 stdout 校核。失败则换同构近邻。
 
 | 匹配度 | 动作 |
 |---|---|
@@ -160,16 +165,15 @@ python "<插件>/skills/osis-engine/scripts/spanremap.py" --to "<目标跨径>"
 
 项目画像的 9 节骨架、每节必含字段、占位规则详见 `references/profile_template.md`(母模板,各 `templates/<bridge>/项目画像.md` 复制此骨架后填项目特定字段)。
 
-## 参数澄清(直接用文本反问)
+## 参数澄清(提问工具)
 
-当且仅当用户的提示不足以无歧义推进时,**用普通文本反问用户**,并把可选项列清楚。
-(OpenCode 内置的 `question` 工具在 Codex / Claude Code 中不存在,不要去找它。)
+当且仅当用户的提示不足以无歧义推进时,用宿主自带的提问工具(如 `question`)反问。**有提问工具时不要用普通文本提问**。
 
 - 信息够且对得上六种之一 → 直接路由桥型,推进
 - 桥型清楚但缺几何/材料参数 → 路由到对应桥型 SKILL,按其 §"必问参数"清单打包反问
 - 桥型/任务描述不明确(六种之间歧义) → 反问让用户选
 - 完整建模但对不上六种 → 按 §路由桥型提示后再继续或停止
-- **推荐项锚定模板库**:反问时把「能精确命中模板的最近参数」放第一项,标注"有现成模板可直接复制,最快";用户自报的参数保留为次选(走复制+小修)。让用户顺手选模板参数 = 后续零构思,求快闭环(见 §会话硬约束 · 默认求快)
+- **options 推荐项锚定模板库**:反问时把「能精确命中模板的最近参数」放第一项,标注"有现成模板可直接复制,最快";用户自报的参数保留为次选(走复制+小修)。让用户顺手选模板参数 = 后续零构思,求快闭环(见 §会话硬约束 · 默认求快)
 
 (具体必问参数表、推荐 option、参数取值范围都在各桥型 SKILL §"必问参数"一节,本 SKILL 不重复)
 
@@ -186,13 +190,13 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 ### 写回:一律全量重建
 
-**改代码 ≠ 写回 OSIS**。`.py` 只是磁盘脚本。局部修改、加功能、失败修复:改完 `.py` 后、向用户报完工前,**同一轮执行**写回(`execute_python(file="py/prep/main.py", cwd="<project_dir>")`)。它会先 `clear()` 再按 `_1`..`_10` 整桥重建。不要用局部命令、单跑 `_N_xxx.py`、或 `osis-l0-hot` 代替这次重建。禁止未执行时说「已完成 / 已改好 / 功能已加上」;未跑完最多说「代码已改,正在执行写回」。例外仅当用户明确说「先别跑 / 只改代码不要执行 / dry-run」,报告写明「按用户要求未执行」。
+**改代码 ≠ 写回 OSIS**。`.py` 只是磁盘脚本。局部修改、加功能、失败修复:改完 `.py` 后、向用户报完工前,**同一轮跑** `python <project_dir>/py/prep/main.py`。它会先 `clear()` 再按 `_1`..`_10` 整桥重建。不要用局部命令、单跑 `_N_xxx.py`、或 `osis-l0-hot` 代替这次重建。禁止未执行时说「已完成 / 已改好 / 功能已加上」;未跑完最多说「代码已改,正在执行写回」。例外仅当用户明确说「先别跑 / 只改代码不要执行 / dry-run」,报告写明「按用户要求未执行」。
 
 只求解、不改模型: `OSISEngine().solve()`,不要 `main.py`。
 
 `add_rebar_s("ShearStirrup", ...)` 在截面上已有同类型箍筋时,OSIS 可能仍返回成功、模型却不更新。生成 `_4` 时对已有箍筋先 `delete_rebar_s("ShearStirrup")` 再 add。不要给模板 `_4` 首次建模嵌一套 [VERIFY] 打印块。
 
-**查 API 优先顺序**(写新代码时):① MCP `get_api_help`(本插件核心工具,支持中文查询) → ② `osis-python-helper` 的 `pyosis_doc.py` → ③ `osis-module-*` SKILL / 模板 `prep/_N` → ④ pyosis 源码。Stage 工期属性是 `.duration`(无 `get_duration()`)。**禁止猜测 API 名。**
+**查 API 优先顺序**(写新代码时):① OSIS MCP 的 `api_glob` / `api_grep` / `api_read`(无则 `osis-python-helper` 的 `pyosis_doc.py`)→ ② `osis-module-*` SKILL / 模板 `prep/_N` → ③ pyosis 源码。不去 WeKnora 查 API。Stage 工期属性是 `.duration`(无 `get_duration()`)。用户问「有哪些知识库」必须调 Weknora,不得用 SKILL 列表代替。
 
 ### 改跨中梁高 → `osis-edit-hmid`
 
@@ -200,24 +204,19 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 ### 两种执行模式
 
-| 模式 | `execute_python` 调用 | 用途 |
+| 模式 | 命令 | 用途 |
 |---|---|---|
-| 改了 `py/` 的写回 | `execute_python(instance_id=..., file="py/prep/main.py", cwd="<project_dir>")` | 先 `clear()` 再整桥重建 |
-| 求解已有模型 | `execute_python(instance_id=..., code="from pyosis import OSISEngine; OSISEngine().solve()")` | 模型已在 OSIS 中,只求解,不改 `py/` |
+| 改了 `py/` 的写回 | `python <project_dir>/py/prep/main.py` | 先 `clear()` 再整桥重建 |
+| 求解已有模型 | `python -c "from pyosis import OSISEngine; OSISEngine().solve()"` | 模型已在 OSIS 中,只求解,不改 `py/` |
 
-> **不要用本地 shell 跑 `python ...`** —— 所有执行都走 `execute_python`(见核心 `osis` SKILL)。
-> 带 CLI 参数的辅助脚本用 `code` + `sys.argv` + `runpy.run_path` 配方,不要用 `file` 模式
-> 直接传参数(`file` 模式会重置 `sys.argv`)。
+> `clear()` 在 `main.py` 入口处。单跑 `_N_xxx.py` 不会清空全桥,也不再作为写回手段。
 
-> `clear()` 在 `main.py` 入口处。单跑 `_N_xxx.py` 不会清空全桥,也不再作为写回手 段。
-
-`main.py` 入口有幂等的 `sys.path.insert`,从任何工作目录跑都能 import 同目录的 `_0_engine.py`。`OSISEngine()` 实例化时自动连接当前打开的 OSIS 项目,**不需要 `cd`**(把工程目录传给 `cwd` 即可)。
+`main.py` 入口有幂等的 `sys.path.insert`,从任何目录跑都能 import 同目录的 `_0_engine.py`。`OSISEngine()` 实例化时自动连接当前打开的 OSIS 项目,**不需要 `cd`**。
 
 **绝对禁止**:
 - `python prep/main.py --solve` —— 当前 `main.py` 不接受该参数
 - 修改后不重新运行 / **只改代码不执行** —— 违规。OSIS 不会感知 `py/` 文件变化
-- **未修改任何 `.py` 就重跑 `main.py`** —— 必然在同一处再次报错,构成死循环(见 § 失败修复流程)
-- **超时/异常后盲目重试** —— 先读回模型状态确认已发生的修改,再决定重跑(可能重复创建或清空重建)
+- **未修改任何 `.py` 就重跑 `main.py`** —— 必然在同一处再次报错,构成死循环(见 §失败修复流程)
 
 ### Engine 便捷操作
 

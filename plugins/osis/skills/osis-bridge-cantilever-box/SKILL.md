@@ -1,15 +1,15 @@
 ---
 name: osis-bridge-cantilever-box
-description: 悬臂浇筑连续梁(挂篮悬浇)。三跨及以上、主跨 30~200m、变截面预应力混凝土连续箱梁,从主墩向两侧对称悬浇节段,跨中合龙。**含普通变截面悬浇梁**。参数不足时用普通文本反问用户(必问清单见 §必问参数)。当总控路由到"悬臂浇筑/悬浇/节段施工/平衡悬臂"时使用。变截面**刚构**(墩梁固结)走 `osis-bridge-rigid-frame-box`。
+description: 悬臂浇筑连续梁(挂篮悬浇)。三跨及以上、主跨 30~200m、变截面预应力混凝土连续箱梁,从主墩向两侧对称悬浇节段,跨中合龙。**含普通变截面悬浇梁**。参数不足时调 question 工具反问用户(必问清单见 §必问参数)。当总控路由到"悬臂浇筑/悬浇/节段施工/平衡悬臂"时使用。变截面**刚构**(墩梁固结)走 `osis-bridge-rigid-frame-box`。
 ---
 
 # osis-bridge-cantilever-box
 
-> 章节顺序与 `_0`~`_10` 模块对齐,OSIS-AI 按"截面 → 节点 → 单元 → 边界 → 荷载 → 钢束 → 活载 → 阶段"顺序对应写 `prep/_N.py`。
+> 章节顺序与 `_0`~`_10` 模块对齐,按"截面 → 节点 → 单元 → 边界 → 荷载 → 钢束 → 活载 → 阶段"顺序对应写 `prep/_N.py`。
 
-## 必问参数(用普通文本一次性问完)
+## 必问参数 (question 工具)
 
-用户提示缺这些参数时,打包成一条普通文本消息一次问完。**options 第一项(推荐默认)锚定模板库:给用户说的参数找最接近的模板,推荐该模板的参数组合并标注「有现成模板可直接复制,最快」**;用户自报值保留为次选项(走复制+小修)。选定模板参数 → 后续 §直接复制优先 路径,求快闭环(osis-engine §会话硬约束 · 默认求快)。
+用户提示缺这些参数时,打包成一个 question 调用一次问完。**options 第一项(推荐默认)锚定模板库:给用户说的参数找最接近的模板,推荐该模板的参数组合并标注「有现成模板可直接复制,最快」**;用户自报值保留为次选项(走复制+小修)。选定模板参数 → 后续 §直接复制优先 路径,求快闭环(osis-engine §会话硬约束 · 默认求快)。
 
 | 参数 | 选项(第一项为推荐) | 何时可省 |
 |---|---|---|
@@ -32,7 +32,7 @@ description: 悬臂浇筑连续梁(挂篮悬浇)。三跨及以上、主跨 30~2
 | 钢绞线 | Strand1860 | GBT5224_2014 |
 | 精轧螺纹钢(临时束) | Rebar785 | JTG3362_2018 |
 
-收缩徐变:avg_humidity=70~75%,birth_time=7d,type_coeff=5.0,shrink_birth=3。
+收缩徐变:avg_humidity=70~75%,birth_time=7d,type_coeff=5.0,birth_by_shrinking=3。
 
 ## 截面 (→ prep/_4_section.py, osis-module-section)
 
@@ -279,14 +279,10 @@ CSxn+6    运营阶段(0d)
 
 **前置**:源模板与目标的「每 T 构节段对数」必须相同。不同则换同构近邻,不要手搓钢束。
 
-悬浇三跨只改跨径 → 调 `osis-engine/scripts/spanremap.py`,禁止手改 `_5`/`_2` 数字(脚本只动节点 x 和钢束曲线 x,`_6`~`_10` 零改动;边跨 ΔL 进现浇段,中跨 ΔL 进合龙两侧恒高段,合龙 2m 与 T 构刚体平移):
+悬浇三跨只改跨径 → 调本 SKILL 的 `scripts/spanremap.py`,禁止手改 `_5`/`_2` 数字(脚本只动节点 x 和钢束曲线 x,`_6`~`_10` 零改动;边跨 ΔL 进现浇段,中跨 ΔL 进合龙两侧恒高段,合龙 2m 与 T 构刚体平移):
 
-```text
-execute_python(instance_id=..., code="""
-import sys, runpy
-sys.argv = ["spanremap.py", "--to", "<目标跨径>"]
-runpy.run_path(r"<插件>/skills/osis-engine/scripts/spanremap.py", run_name="__main__")
-""", cwd="<project_dir>")
+```bash
+python "<skill_dir>/scripts/spanremap.py" --to "<目标跨径>"
 ```
 
 看 stdout 校核(节点数、梁端、墩位、合龙 2m、单调/总长/镜像)。失败或非三跨 → 换近邻,不要手改。桥宽/h_root/板厚仍改 `_4`(必要时 `_6` 的 `h_elem`);只改 h_mid 走 `osis-edit-hmid`。贴底束 bottom 机制见 `osis-module-tendon`。

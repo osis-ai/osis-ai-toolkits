@@ -3,21 +3,15 @@ name: osis-python-helper
 description: >
   基于 pyosis 回答问题或辅助生成建模代码。当用户需要 (1) 生成 pyosis 代码、
   (2) 查询某个 pyosis Manager/API 用法、(3) 解决 pyosis 使用中的报错时使用本技能。
-  查签名/参数时优先调 MCP 工具 get_api_help(支持中文查询);
-  get_api_help 查不到或版本不符时立即降级到本 SKILL 的 scripts/pyosis_doc.py。
-  禁止把 SKILL 列表当成知识库;禁止默认通读 manager.py;仅 lookup 不够或需看实现细节时再打开源码。
+  查签名/参数用 OSIS MCP 的 api_glob / api_grep / api_read(像 glob/grep/read 一样直接用);
+  没有这些工具时用本 SKILL 的 scripts/pyosis_doc.py。不要去知识库查 API。
+  禁止默认通读 manager.py;仅查文档不够或需看实现细节时再打开源码。
 ---
 
 # pyosis 助手
 
-pyosis 是 OSIS 的 Python 建模库(Manager 模式),通过 HTTP 控制运行中的 OSIS(须已启动登录)。
+pyosis 是 OSIS 的 Python 建模库(Manager 模式),通过 HTTP 控制运行中的 OSIS(须已启动登录,默认端口 18080)。
 所有 API 以当前安装版本为准,不确定就现场查,禁止凭印象写。
-
-> **端口与执行方式(Codex / Claude Code)**:你不需要、也不应该自己去连 OSIS 端口。
-> 所有 Python 都通过 MCP 工具 `execute_python(instance_id, code 或 file)` 执行,
-> Broker 在 OSIS 官方 Python 环境里子进程运行,端口与 `instance_id` 的映射由
-> OSIS Agent Broker 维护(注意:Broker 自己监听 18080,
-> 那是 Broker 而不是 OSIS)。需要查 API 用 `get_api_help`。
 
 ## 安装
 
@@ -48,8 +42,16 @@ engine.solve()
 
 ## 查 API(现场查)
 
-1. MCP 工具 `get_api_help`(query 支持中文 / symbol 精确查,拿到签名、参数、返回值、示例)
-2. 拿不到或版本不符 → 本 SKILL 的 `pyosis_doc.py`(用法见下)
+1. 有 OSIS MCP 的 `api_*` 工具(名字前缀随宿主不同,按后缀认)就用它们,索引来自 OSIS 执行环境里的 pyosis,与实际运行版本一致:
+
+   | 工具 | 像 | 用法 |
+   |---|---|---|
+   | `api_glob(pattern)` | glob | 列成员/按名找:`NodeManager.*`、`engine.tendon.prop.*`、`*.create_*load*`、`*Manager` |
+   | `api_grep(pattern)` | grep | 正则搜签名+docstring,中文概念用它:`梁单元`、`弹性模量`、`UTEMP` |
+   | `api_read(symbol)` | read | 单个 API 全文(签名/参数/docstring/源码位置);接受 `ElementManager.create_beam3d`、`engine.element.create_beam3d`、唯一短名;类给成员列表 |
+
+   典型顺序:`api_glob`/`api_grep` 定位 → `api_read` 看全文 → 写代码。`api_read` 遇同名歧义(如 `create`)返回 `candidates`,从中挑限定名再读,不要猜。
+2. 没有 `api_*` 工具 → `pyosis_doc.py`(用法见下)
 3. 仍不够才读源码 manager.py
 
 ## pyosis_doc.py 用法
@@ -87,8 +89,11 @@ python pyosis_doc.py search uniform --limit 20
 
 ## 关键坑(查签名看不出来的)
 
-- **禁止 `engine.new_project`**——OSIS-AI 始终在已打开的项目里工作;保存用 `engine.save_project()`。
+- **禁止 `engine.new_project`**——始终在已打开的项目里工作;保存用 `engine.save_project()`。
 - PropertyManager 入口是 `engine.prop`,不是 `engine.property`。
+- `TendonPropManager.create_in` 位置序:name, mat, code, diameter, num, pipe, friction_coeff, deviation_coeff, …;便捷 `create` 是 name, s_type, mat, area 再接 create_in 余参。
+- `lc.gradient_temp` 读回是 list[dict],按 `entityNO` 取单条,禁止 print 全表。
+- L0 改构件厚度 `assign_component_thickness` 用 `op='a'`(与模板一致);docstring 的 `'s'` 在部分 OSIS 上报「编辑构件厚度有误」。
 - 第一参数约定:多数 `create_*` 第一参数是 `no=None`(自动分配);例外——`stage.create` 的 no 必填 int(编号须连续),`tendon.prop` / `tendon.shape` / `load` / `settlement` / `live` / `geometry` 的 create 第一参数是 `name`。
 - 修改结构 = 同 `no` 重新 create 覆盖;新增 = 新 `no`。
 - 局部改自重/节点力/PST 等标量也先改对应 `prep/_N.py`,再按 `osis-engine` 跑 `prep/main.py`。不要走已停用的 `osis-l0-hot`。

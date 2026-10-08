@@ -54,19 +54,12 @@ DOCX模板 ──docx_to_md──► 裸模板.md
 
 ## 完整构建流程
 
-> **执行方式**：本 Skill 所有 `python ...` 命令一律改用 `execute_python(code=...)` +
-> `sys.argv` + `runpy.run_path` 执行（配方见核心 `osis` SKILL §1.4），不要在本地
-> shell 跑 `python`。下文各命令的参数原样放进 `sys.argv`。
-> **`cwd` 必须传项目根目录**（`data.py` 会在工作目录下创建 `json/`、`image/` 并输出
-> 到当前目录 —— 工作目录不同，产物位置就不同）。
-
 ### 1. 生成项目数据结构
 
 如果还没有 `项目数据结构.json`，先运行：
 
-```text
-execute_python(code="<sys.argv + runpy 配方>", cwd="<项目根目录>")
-# 等价于: python <skill_dir>/scripts/data.py -o 项目数据结构.json
+```bash
+python <skill_dir>/scripts/data.py -o 项目数据结构.json
 ```
 
 > `data.py` 会在当前工作目录下创建 `json/` 和 `image/` 两个子目录，输出验算数据的 JSON 文件和内力图。确保在**项目根目录**执行。
@@ -75,7 +68,7 @@ execute_python(code="<sys.argv + runpy 配方>", cwd="<项目根目录>")
 
 若用户未提供模板，使用默认模板 `<skill_dir>/templates/计算书案例.docx`。
 
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
+```bash
 python <skill_dir>/scripts/docx_to_md.py "模板.docx" "裸模板.md" --h1 "一级标题" --h2 "二级标题" --h3 "三级标题"
 ```
 
@@ -166,7 +159,7 @@ JSON 中为 `null` 的数据，**仅删除对应的图片占位符、表格及�
 
 ### 5. 批量填充表格
 
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
+```bash
 python <skill_dir>/scripts/fill_tables.py "计算书_初稿.md" "计算书_填表.md"
 ```
 
@@ -174,7 +167,7 @@ python <skill_dir>/scripts/fill_tables.py "计算书_初稿.md" "计算书_填�
 
 ### 6. 统一重编号
 
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
+```bash
 python <skill_dir>/scripts/renumber.py "计算书_填表.md" "计算书.md" --heading \
     --figure-prefix "图" --figure-format "{chapter}.{seq}" \
     --table-prefix "表" --table-format "{chapter}.{seq}"
@@ -192,7 +185,7 @@ python <skill_dir>/scripts/renumber.py "计算书_填表.md" "计算书.md" --he
 
 检查 `计算书.md` 无残留占位符：
 
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
+```bash
 # Git Bash
 grep -cE "\{\{TABLE:|\{\{表格数据\}\}|图片占位符" 计算书.md
 ```
@@ -201,7 +194,7 @@ grep -cE "\{\{TABLE:|\{\{表格数据\}\}|图片占位符" 计算书.md
 
 删除中间产物：
 
-```text  # 参数示意:实际经 execute_python(code=sys.argv+runpy) 执行
+```bash
 rm -f 裸模板.md 计算书_初稿.md 计算书_填表.md
 ```
 
@@ -329,18 +322,20 @@ midas 模板的验算章节只有**包络图 + 结论文字**，没有 OSIS 模�
 
 当前环境为 Windows MinGit（Git Bash），请优先使用 Bash + Python 工具链处理文件操作。`Select-String`、`Set-Content`、`Out-File` 等 PowerShell cmdlet 默认使用系统编码（Windows-1252），写入含中文的 Markdown 文件时会破坏中文字符。
 
-**解决**：涉及中文文件读写时，用 `execute_python(code=...)` 里的 Python 脚本替代 shell 文本处理（本地 shell/PowerShell 的编码问题一并规避）：
-```text  # 实际经 execute_python(code=...) 执行
+**解决**：涉及中文文件读写时，用 Python 脚本替代 shell 文本处理，避免 PowerShell 编码问题：
+```bash
 # ❌ 不推荐使用 PowerShell cmdlet 处理中文 Markdown
+# (请在当前环境下避免这样做)
 # (Get-Content file.md) -replace 'a','b' | Set-Content file.md
 
-# ✅ 推荐：execute_python(instance_id=..., code=r"""
-# with open('file.md', 'r', encoding='utf-8') as f:
-#     c = f.read()
-# c = c.replace('a', 'b')
-# with open('file.md', 'w', encoding='utf-8') as f:
-#     f.write(c)
-# """, cwd="<项目根目录>")
+# ✅ 推荐：用 Python 脚本替代
+python - <<'PY'
+with open('file.md', 'r', encoding='utf-8') as f:
+    c = f.read()
+c = c.replace('a', 'b')
+with open('file.md', 'w', encoding='utf-8') as f:
+    f.write(c)
+PY
 ```
 
 ### 8. 旧文件干扰
