@@ -1,11 +1,11 @@
 # 幂等与删除命令实测手册
 
-> 写回 OSIS 一律 `python .../prep/main.py`(先 `clear()` 再整桥重建)。不要用单模块重跑或 `osis-l0-hot` 代替。
+> 写回 OSIS 一律 `python .../prep/main.py`(先 `clear()` 再整桥重建)。不要用单模块重跑代替。
 > 本文件只保留生成代码时用得上的 delete 命令和幂等事实(2026-07 实机)。下面旧的「禁止 main.py」表不再作为写回规则。
 
 ## 0. 写回
 
-改了 `py/` 就跑 `python .../prep/main.py`。不要 `osis-l0-hot`,不要 `python -c` 局部写回,不要单跑 `_N_xxx.py`。只求解且不改 `py/` 时用 `OSISEngine().solve()`。
+改了 `py/` 就跑 `python .../prep/main.py`。不要 `python -c` 局部写回,不要单跑 `_N_xxx.py`。只求解且不改 `py/` 时用 `OSISEngine().solve()`。
 
 ## 1. 三个根因:为什么以前"改一处就要全量重建"
 
@@ -70,13 +70,16 @@ shape.layout("ELEMENT", 1, 0, 0, 0.0, 0.0, 0.0)
 `main.py` 的推荐结构(clear 只在此处):
 
 ```python
+from pyosis import batch
+
 def main(engine=None) -> None:
     eng = default_engine if engine is None else engine
-    eng.clear()          # ← 只允许出现在这里
-    eng.clc()
-    setup_control(eng)   # _1 只设参数,不含 clear
-    build_property(eng)
-    # ... 其余模块
+    with batch():            # 全部命令缓冲,退出时一次发送
+        eng.clear()          # ← 只允许出现在这里
+        eng.clc()
+        setup_control(eng)   # _1 只设参数,不含 clear
+        build_property(eng)
+        # ... 其余模块
 ```
 
 ## 4. 删除方式对照表(绕过 GetReferences 不通)

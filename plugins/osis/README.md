@@ -31,7 +31,7 @@ python scripts\sync_skills.py          :: 默认源 ..\osis-skill-enhance\.agent
 ```
 
 同步结果与源 commit 记在 `skills/.synced-from`；`tests/test_manifests.py` 会拦下与源不一致的手改。
-`osis-l0-hot`（已停用）不同步。领域 skill 的宿主中立写法规范见源仓库 `SKILL编写规则.md §11`。
+领域 skill 的宿主中立写法规范见源仓库 `SKILL编写规则.md §11`。
 
 ## MCP 工具
 

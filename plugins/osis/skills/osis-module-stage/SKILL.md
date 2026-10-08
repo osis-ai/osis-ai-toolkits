@@ -95,7 +95,7 @@ engine.stage.delete(no)             # 删除阶段(参数是阶段编号 int,不
 
 > `StageManager` **没有 `rename` 方法**;改阶段名请用同 `no` 重新 `create(no, 新名, duration)`(同号覆盖,实测不报错)。
 
-## 查询与局部修改(L0)
+## 查询与局部修改
 
 `engine.stage.get(no)` 返回 `Stage` 对象;工期字段是属性 **`.duration`**(无 `get_duration()`)。
 

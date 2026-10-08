@@ -174,7 +174,7 @@ def _format_entry(entry: ApiEntry, *, full: bool) -> str:
     # 覆盖 docstring 易误导处(实测/模板口径)
     if entry.qual == "PropertyManager.assign_component_thickness":
         lines.append(
-            "hint: L0 改厚度用 op='a'(与模板一致)。"
+            "hint: 改厚度用 op='a'(与模板一致)。"
             "docstring 的 's'=替换在部分 OSIS 上会报「编辑构件厚度有误」。"
         )
     if entry.qual == "LoadCase.create_gradient_temperature":

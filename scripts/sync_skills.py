@@ -18,14 +18,13 @@ DEST = REPO / "plugins" / "osis" / "skills"
 DEFAULT_SRC = REPO.parent / "osis-skill-enhance" / ".agents" / "skills"
 
 OWN = {"osis"}            # 插件自有(Broker 用法),不来自源仓库
-EXCLUDE = {"osis-l0-hot"}  # 已停用
 STAMP = ".synced-from"
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc")
 
 
 def synced_names(src: Path) -> list[str]:
     return sorted(p.name for p in src.iterdir()
-                  if p.is_dir() and (p / "SKILL.md").is_file() and p.name not in EXCLUDE)
+                  if p.is_dir() and (p / "SKILL.md").is_file())
 
 
 def source_commit(src: Path) -> str:

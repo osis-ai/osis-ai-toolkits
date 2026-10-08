@@ -226,7 +226,7 @@ def _tree(root: Path) -> dict[str, bytes]:
 def test_synced_skills_recorded():
     stamp = (PLUGIN_ROOT / "skills" / ".synced-from").read_text(encoding="utf-8")
     names = stamp.split("skills:", 1)[1].split()
-    assert "osis-l0-hot" not in names and "osis" not in names
+    assert "osis" not in names
     for n in names:
         assert (PLUGIN_ROOT / "skills" / n / "SKILL.md").is_file(), n
 
