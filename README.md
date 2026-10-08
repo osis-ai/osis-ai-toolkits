@@ -61,9 +61,50 @@ scripts/sync_skills.py         同步领域 skill
 codex plugin marketplace add osis-ai/osis-ai-toolkits
 ```
 
-然后在 Codex 的 `/plugins` 中安装 **OSIS**。
+然后在 Codex 的 `/plugins` 中安装 **OSIS**，或命令行 `codex plugin add osis@osis-ai-toolkits`。
+
+### 离线安装（无法访问 GitHub 的电脑）
+
+两家都**不能直接装 zip**，必须先解压，再把解压目录当本地 marketplace：
+
+1. 拷入 `osis-ai-toolkits-<版本>.zip`（发布方式见 [发布新版本](#发布新版本)），解压到**固定位置**，如 `D:\osis-ai-toolkits`（之后更新要覆盖到同一目录，别删）。
+2. 安装：
+
+   ```text
+   :: Claude Code
+   claude plugin marketplace add D:\osis-ai-toolkits
+   claude plugin install osis@osis-ai-toolkits
+
+   :: Codex
+   codex plugin marketplace add D:\osis-ai-toolkits
+   codex plugin add osis@osis-ai-toolkits
+   ```
 
 > marketplace 名称（`osis-ai-toolkits`）与 plugin slug（`osis`）发布后保持稳定，不要改。
+
+## 更新插件
+
+前提：发布方提高了 `plugin.json` 里的 `version`。**版本号不变，两家都不认为有更新。**
+
+| 场景 | Claude Code | Codex |
+|---|---|---|
+| 从 GitHub 安装，自动 | `/plugin` → **Marketplaces** → 选 `osis-ai-toolkits` → **Enable auto-update**（第三方 marketplace 默认关，开一次即可）。之后每次启动后台拉取，当前会话提示 `/reload-plugins`，下次会话生效 | 无自动更新 |
+| 从 GitHub 安装，手动 | `claude plugin update osis@osis-ai-toolkits`（只跑 `claude plugin marketplace update` 不会更新已装插件） | `codex plugin marketplace upgrade`（会一并更新已装插件） |
+| 离线 | 新 zip 解压**覆盖**到原目录，再 `claude plugin update osis@osis-ai-toolkits` | 新 zip 解压覆盖到原目录，再 `codex plugin add osis@osis-ai-toolkits` |
+
+更新后重开会话生效。
+
+## 卸载
+
+```text
+:: Claude Code
+claude plugin uninstall osis@osis-ai-toolkits
+claude plugin marketplace remove osis-ai-toolkits     :: 可选，连同 marketplace 一起删
+
+:: Codex
+codex plugin remove osis@osis-ai-toolkits
+codex plugin marketplace remove osis-ai-toolkits      :: 可选
+```
 
 ## 使用前提
 
@@ -118,6 +159,19 @@ key 读环境变量 `WEKNORA_API_KEY`（Python 环境由 OSIS 环境初始化工
 ```bat
 python scripts\sync_skills.py
 ```
+
+## 发布新版本
+
+1. `python scripts\sync_skills.py` 同步 skill（源仓库先提交，`.synced-from` 才不带 `dirty`）。
+2. 两处版本号一起改：`plugins/osis/plugin.json`、`plugins/osis/.claude-plugin/plugin.json`。
+3. 跑测试（见下），提交并 push —— 在线用户据此更新。
+4. 给离线用户打 zip（只含已提交内容）：
+
+   ```bat
+   git archive --format=zip --prefix=osis-ai-toolkits/ -o dist\osis-ai-toolkits-<版本>.zip HEAD
+   ```
+
+   Broker wheel 另行分发（见 [使用前提](#使用前提)）。
 
 ## 测试
 
