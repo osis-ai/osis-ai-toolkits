@@ -53,7 +53,7 @@ description: 截面建模模块。生成 `prep/_4_section.py`,负责创建截面
 ## 创建截面的硬规则
 
 - **显式传 `no=`**。保证幂等,重跑模块不冲突。
-- **不传 `no` 用 None**。OSIS 自动分配编号会让下游 `_6` 引用错乱。
+- **显式传 `no`,不要传 None**。OSIS 自动分配编号会让下游 `_6` 引用错乱。
 - **参数化截面**:从目标尺寸反推全部几何参数,不要只改 `h`/`bt`。详见 `references/section_transform.md` §参数化缩放。
 - **自定义截面**:逐点变换 `contour_matrix`,全 z 等比缩放是错误做法(板厚、倒角会变形)。详见 `references/section_transform.md` §自定义变换。
 

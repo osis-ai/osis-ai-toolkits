@@ -9,8 +9,8 @@
 - `anomaly_type`: section_transition_step
 - `engineering_fault`: 设计要求连续时，相邻截面可见几何不连续
 - `visual_signals`: 非设计位置出现竖向台阶；内部截面轮廓在共享节点跳变
-- `candidate_causes`: 相邻单元 `nSec1/nSec2` 不连续；渐变段被写成等截面；截面或偏移定义不一致
-- `candidate_targets`: 单元截面端指派 `nSec1/nSec2`；截面与偏移定义 `geometry/SectionOffset`
+- `candidate_causes`: 相邻单元 `sec1/sec2` 不连续；渐变段被写成等截面；截面或偏移定义不一致
+- `candidate_targets`: 单元截面端指派 `sec1/sec2`；截面与偏移定义 `geometry/SectionOffset`
 - `required_facts`: 异常共享节点；左右相邻单元；可见截面签名；`transition_presence`；`transition_behavior`；`implementation_fault`
 - `required_reference`: 当前项目画像中的允许突变位置和预期分区；含糊时按需读取一个相关标准案例
 - `reject_conditions`: 设计明确允许同类型突变；截面几何等价；渲染伪影未排除
@@ -22,8 +22,8 @@
 - `anomaly_type`: section_assignment_outlier
 - `engineering_fault`: 均匀区单单元截面指派离群
 - `visual_signals`: 局部矩形凹阶或凸阶；短平台被左右节点竖线界定
-- `candidate_causes`: 单元 `nSec1/nSec2` 误指派；分段索引错一位；局部截面替换错误
-- `candidate_targets`: 单元截面端指派 `nSec1/nSec2`；单元生成范围 `element_range/section_index`
+- `candidate_causes`: 单元 `sec1/sec2` 误指派；分段索引错一位；局部截面替换错误
+- `candidate_targets`: 单元截面端指派 `sec1/sec2`；单元生成范围 `element_range/section_index`
 - `required_facts`: 左邻—当前—右邻三单元；共享节点；可见截面签名
 - `required_reference`: `expected_section_zones`；`allowed_discontinuity_positions`
 - `reject_conditions`: 区段非均匀；合法局部构造；渲染伪影未排除
@@ -62,7 +62,7 @@
 - `engineering_fault`: 变截面可见截面签名的趋势或分区方向与设计相反
 - `visual_signals`: 端—跨中—端截面签名趋势与设计相反；腹板—下翼缘交界线或下翼缘厚度反转、回摆或突然复位；总梁高恒定但内部轮廓趋势错误；设计要求镜像而两侧趋势不对应
 - `candidate_causes`: 起终截面顺序颠倒；单元拓扑顺序反向；插值比例定义错误；分区边界映射错误；当前 OSIS 载入状态与项目源文件不是同一版本
-- `candidate_targets`: 单元截面端指派 `nSec1/nSec2/element_order`；单元生成分区 `element_range/zone_boundary/interpolation_ratio`；截面签名参数：下翼缘厚度 `bottom_flange_thickness`、腹板—下翼缘交界线 `web_bottom_flange_junction`、内部轮廓 `internal_contour`
+- `candidate_targets`: 单元截面端指派 `sec1/sec2/element_order`；单元生成分区 `element_range/zone_boundary/interpolation_ratio`；截面签名参数：下翼缘厚度 `bottom_flange_thickness`、腹板—下翼缘交界线 `web_bottom_flange_junction`、内部轮廓 `internal_contour`
 - `required_facts`: 有来源的预期设计/项目源/实时模型截面序列；端—跨中—端可见轮廓趋势；腹板—下翼缘交界线和下翼缘厚度趋势；过渡区节点坐标；`source_state_consistency`
 - `required_reference`: 设计截面分区及其签名趋势；`expected_section_zones`；左右对称或明确非对称要求
 - `reject_conditions`: 设计截面分区或签名趋势未确认；设计本身明确允许该非单调趋势；必需局部图不能覆盖完整趋势

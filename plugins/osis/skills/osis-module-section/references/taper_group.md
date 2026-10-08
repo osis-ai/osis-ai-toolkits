@@ -5,7 +5,7 @@ OSIS 通过 TaperEle 命令在两端截面之间自动生成中间截面序列,�
 ## 工作原理
 
 1. 创建两端截面(如 1 号=深,2 号=浅)
-2. 整组单元赋予相同 `nSec1`/`nSec2`(变截段统一用浅→深或深→浅)
+2. 整组单元赋予相同 `sec1`/`sec2`(变截段统一用浅→深或深→浅)
 3. 调用 `engine.element.taper_group.create(...)` 注册
 4. OSIS 自动生成大量中间截面,命名如 `408_组1_408`
 
@@ -13,7 +13,7 @@ OSIS 通过 TaperEle 命令在两端截面之间自动生成中间截面序列,�
 
 1. **只支持 9 种参数化截面类型**:L 型/倒 L 型、T 型/倒 T 型、工字型、圆/圆管形、实心/空腹矩形(可倒圆/斜角)、实心/空腹圆端形、小箱梁、T 梁、常规箱梁
 2. **不支持自定义截面**(`create_custom`)
-3. **整组单元必须拥有相同的截面号和过渡形式**(`nSec1`、`nSec2`、`nZTrans`、`nYTrans` 必须一致)
+3. **整组单元必须拥有相同的截面号和过渡形式**(`sec1`、`sec2`、`z_trans`、`y_trans` 必须一致)
 4. TaperEle 命令在导出命令流时会被注释 —— OSIS 实际使用自动生成的独立截面
 
 ## pyosis API
@@ -68,7 +68,7 @@ x=0 ── [浅等截] ── [浅→深 抛物线] ── [深等截] ── [�
 sec_deep = engine.section.create_smallbox("深截面", h=2.0, ..., no=1)
 sec_shallow = engine.section.create_smallbox("浅截面", h=1.4, ..., no=2)
 
-# 2. 单元(等截段用相同 nSec1/nSec2,变截段统一用浅→深或深→浅)
+# 2. 单元(等截段用相同 sec1/sec2,变截段统一用浅→深或深→浅)
 D, S = sec_nos[0], sec_nos[1]
 assignments = []
 assignments += [(S, S)] * 2    # 左端等截面
@@ -79,7 +79,7 @@ assignments += [(S, S)] * 2    # 右端等截面
 
 for i, (s1, s2) in enumerate(assignments):
     engine.element.create_beam3d(
-        i+1, i+2, nMat=1, nSec1=s1, nSec2=s2, nZTrans=1, nYTrans=1, no=i+1
+        i+1, i+2, mat=1, sec1=s1, sec2=s2, z_trans=1, y_trans=1, no=i+1
     )
 
 # 3. 变截面组(只覆盖变截段,不含等截面段)
@@ -91,9 +91,9 @@ engine.element.taper_group.create(
 )
 ```
 
-## 与 `create_beam3d(nZTrans=2)` 的区别
+## 与 `create_beam3d(z_trans=2)` 的区别
 
-| 维度 | 单单元 `nZTrans=2` | 变截面组 TaperEle |
+| 维度 | 单单元 `z_trans=2` | 变截面组 TaperEle |
 |---|---|---|
 | 作用范围 | 单个单元内部 | 整组单元 |
 | 中间截面 | 无(直接插值计算) | OSIS 自动生成大量独立截面 |

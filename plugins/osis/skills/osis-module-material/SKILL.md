@@ -16,7 +16,7 @@ description: 材料定义模块。生成 `prep/_3_material.py`,定义混凝土/�
 5. **创建预应力钢绞线**(`create_prestressed`)。
 6. **把材料编号、规格、规范写入建模状态**(`profile` + `sections` 字段)。
 
-> 不在本模块决定材料应用于哪些单元 —— 那是 `_6_element` 的事,按 `nMat` 引用。
+> 不在本模块决定材料应用于哪些单元 —— 那是 `_6_element` 的事,按 `mat` 引用。
 
 ## 公共约定
 
@@ -192,5 +192,5 @@ engine.material.create(no, name, type, *args, **kwargs)
 |---|---|
 | 桥型层 → 本模块 | 混凝土等级、钢筋等级、钢绞线等级、规范 |
 | 上游 `osis-module-control` | 收缩徐变开关(`calc_shrink` / `calc_creep`) |
-| 下游 `osis-module-element` | 材料号(`nMat`) |
+| 下游 `osis-module-element` | 材料号(`mat`) |
 | 下游 `osis-module-tendon` | 钢绞线材料号(`mat`) |

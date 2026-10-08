@@ -10,7 +10,7 @@ description: 单元建模模块。生成 `prep/_6_element.py`,创建梁单元、
 ## 接到任务后,按顺序做
 
 1. **从建模状态读取**:节点编号、截面编号、材料编号。
-2. **创建梁单元**(`create_beam3d`),逐对节点连线,显式指定 `no=`、`nMat=`、`nSec1=`/`nSec2=`。
+2. **创建梁单元**(`create_beam3d`),逐对节点连线,显式指定 `no`、`mat`、`sec1`/`sec2`。
 3. **组建分组**(`element.group.create`)。**所有分组名要预登记**,让下游模块按名引用。
 4. **分配构件理论厚度**(`prop.assign_component_thickness`),按单元两端截面算完再分批赋(公式与重算规则见 §分配构件理论厚度)。
 5. **把单元编号、分组名写入建模状态**(`elements` 字段)。
@@ -23,18 +23,18 @@ description: 单元建模模块。生成 `prep/_6_element.py`,创建梁单元、
 e = engine.element.create_beam3d(
     no,                  # 单元编号(显式,第一个位置参数)
     node1, node2,        # I 端、J 端节点编号
-    nMat,                # 材料号
-    nSec1, nSec2,        # I 端、J 端截面号(等截面单元两端相同,变截面单元两端不同)
-    nYTrans=1, nZTrans=1, # 截面过渡方式(1=线性插值)
-    dStrain=0.0, bFlag=0, dTheta=0, bWarping=0,
+    mat,                # 材料号
+    sec1, sec2,        # I 端、J 端截面号(等截面单元两端相同,变截面单元两端不同)
+    y_trans=1, z_trans=1, # 截面过渡方式(1=线性插值)
+    strain=0.0, flag=0, theta=0, warping=0,
 )
 ```
 
 - `node1`/`node2` 必须是 `_5_node` 已建的节点
-- `nMat` 必须是 `_3_material` 已建的材料
-- `nSec1`/`nSec2` 必须是 `_4_section` 已建的截面
+- `mat` 必须是 `_3_material` 已建的材料
+- `sec1`/`sec2` 必须是 `_4_section` 已建的截面
 - 单元编号 `no` 显式,从 1 开始,逐个加 1
-- 也可用通用入口 `engine.element.create(no, "BEAM3D", node1, node2, nMat=..., nSec1=..., nSec2=...)`(`type` 字符串派发)
+- 也可用通用入口 `engine.element.create(no, "BEAM3D", node1, node2, mat=..., sec1=..., sec2=...)`(`type` 字符串派发)
 
 ## 通用入口 `engine.element.create`
 
@@ -52,7 +52,7 @@ engine.element.create(no, type, *args, **kwargs)
 | `"CABLE"` | `create_cable` | 拉索单元 |
 | `"SHELL"` | `create_shell` | 壳单元 |
 
-**`create_*` 与 `create()` 的关系**:两者只差一个 `type` 路由参数,其余参数(顺序、含义、默认值)完全一致——`create_*` 等价于 `create()` 帮你填好了 `type`。例:`create(1, "BEAM3D", node1, node2, nMat, nSec1, nSec2)` ≡ `create_beam3d(1, node1, node2, nMat, nSec1, nSec2)`。日常推荐 `create_*`(IDE 补全友好);`create()` 适合按配置表/循环动态派发。
+**`create_*` 与 `create()` 的关系**:两者只差一个 `type` 路由参数,其余参数(顺序、含义、默认值)完全一致——`create_*` 等价于 `create()` 帮你填好了 `type`。例:`create(1, "BEAM3D", node1, node2, mat, sec1, sec2)` ≡ `create_beam3d(1, node1, node2, mat, sec1, sec2)`。日常推荐 `create_*`(IDE 补全友好);`create()` 适合按配置表/循环动态派发。
 
 ## 弹簧单元(墩梁连接等)
 
@@ -62,7 +62,7 @@ engine.element.create(no, type, *args, **kwargs)
 e = engine.element.create_spring(
     no,                 # 单元编号
     node1, node2,       # 节点编号
-    bLinear=1,          # 是否线性(0/1)
+    is_linear=1,          # 是否线性(0/1)
     dx=1e13,            # UX 方向刚度(m 刚度极大值 = 固定)
     dy=1e13,
     dz=1e13,
@@ -74,7 +74,7 @@ e = engine.element.create_spring(
 ```
 
 - **刚度极大值 = 固定**:平动方向 `1e13`,转动方向 `1e16`
-- **典型用法**:墩梁固结时,`dx=dy=dz=1e13`,`rx=ry=rz=1e16`,`bLinear=1`
+- **典型用法**:墩梁固结时,`dx=dy=dz=1e13`,`rx=ry=rz=1e16`,`is_linear=1`
 
 ## 组名 = 跨模块契约(核心规则)
 
@@ -153,7 +153,7 @@ engine.prop.assign_component_thickness(
 
 **理论厚度用于收缩徐变计算**(pyosis docstring 原话),混凝土梁单元必须分配,不是可省的装饰。
 
-**L0 改厚度实测**:模板与现网一律用 `"a"`。docstring 写 `"s"`=替换,但对已分配单元执行 `"s"` 可能报「编辑构件厚度有误」;改用 `"a"` 可覆盖该单元厚度(同值单元可能被 OSIS 合并到同一 `AsgnCompThk` 行)。
+**改厚度实测**:模板与现网一律用 `"a"`。docstring 写 `"s"`=替换,但对已分配单元执行 `"s"` 可能报「编辑构件厚度有误」;改用 `"a"` 可覆盖该单元厚度(同值单元可能被 OSIS 合并到同一 `AsgnCompThk` 行)。
 
 ### 模板已证实口径(箱梁 / CONVENTIONALBOX)
 
@@ -168,7 +168,7 @@ engine.prop.assign_component_thickness(
 
 2. **单元理论厚度**(写入 `assign_component_thickness` 的值)
    \[
-   h_{\mathrm{elem}} = \frac{h(nSec1) + h(nSec2)}{2}
+   h_{\mathrm{elem}} = \frac{h(sec1) + h(sec2)}{2}
    \]
    即取该梁单元 **I/J 两端截面** \(h_{\mathrm{sec}}\) 的算术平均。等截面单元两端相同 → \(h_{\mathrm{elem}}=h_{\mathrm{sec}}\)。变截面/Taper 单元两端不同 → 必须平均,禁止只拿一端或按"同截面号分批共用一个值"。
 
@@ -218,7 +218,7 @@ h_sec = 2 * A / (u_outer + u_in / 2)
 
 - **`组不存在` / `load group not found`** —— 下游引用的组名在本 module 没建,或大小写/下划线/前缀不一致。对照状态里的组名清单
 - **`形状控制点坐标超出参照单元组的坐标范围`** —— 钢束投影组范围不足,扩组范围
-- **弹簧报"弹性连接报错"** —— 刚度值过小(应该 1e13/1e16)或 `bLinear=0`
+- **弹簧报"弹性连接报错"** —— 刚度值过小(应该 1e13/1e16)或 `is_linear=0`
 
 (其他见 `osis-engine/references/error_diagnosis.md`)
 

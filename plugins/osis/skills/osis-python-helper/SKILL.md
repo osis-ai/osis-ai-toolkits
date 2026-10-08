@@ -22,12 +22,12 @@ python -m pip install osis-python   # PyPI 包名是 osis-python,不是 pyosis
 ## 核心模式
 
 ```python
-from pyosis.engine import OSISEngine
+from pyosis import OSISEngine
 engine = OSISEngine()
 
 engine.material.create_conc(no=1, name="C30", code="JTG3362_2018", grade="C30")
 engine.node.create(no=1, x=0, y=0, z=0)
-engine.element.create(no=1, type="BEAM3D", node1=1, node2=2, nMat=1, nSec1=1, nSec2=1)
+engine.element.create(no=1, type="BEAM3D", node1=1, node2=2, mat=1, sec1=1, sec2=1)
 
 lc = engine.load.create("自重", "CS", 1.0)   # manager 层:创建荷载工况
 lc.create("GRAVITY")                          # 对象层:向工况加荷载——两个 create 不是一回事
@@ -93,7 +93,7 @@ python pyosis_doc.py search uniform --limit 20
 - PropertyManager 入口是 `engine.prop`,不是 `engine.property`。
 - `TendonPropManager.create_in` 位置序:name, mat, code, diameter, num, pipe, friction_coeff, deviation_coeff, …;便捷 `create` 是 name, s_type, mat, area 再接 create_in 余参。
 - `lc.gradient_temp` 读回是 list[dict],按 `entityNO` 取单条,禁止 print 全表。
-- L0 改构件厚度 `assign_component_thickness` 用 `op='a'`(与模板一致);docstring 的 `'s'` 在部分 OSIS 上报「编辑构件厚度有误」。
+- 改构件厚度 `assign_component_thickness` 用 `op='a'`(与模板一致);docstring 的 `'s'` 在部分 OSIS 上报「编辑构件厚度有误」。
 - 第一参数约定:多数 `create_*` 第一参数是 `no=None`(自动分配);例外——`stage.create` 的 no 必填 int(编号须连续),`tendon.prop` / `tendon.shape` / `load` / `settlement` / `live` / `geometry` 的 create 第一参数是 `name`。
 - 修改结构 = 同 `no` 重新 create 覆盖;新增 = 新 `no`。
 - 局部改自重/节点力/PST 等标量也先改对应 `prep/_N.py`,再按 `osis-engine` 跑 `prep/main.py`。不要走已停用的 `osis-l0-hot`。

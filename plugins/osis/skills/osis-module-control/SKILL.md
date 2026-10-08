@@ -18,8 +18,7 @@ description: 控制参数模块。生成 `prep/_1_control.py`,设置控制参数
 `engine.clear()` + `engine.clc()` **只允许出现在 `main.py` 的全量入口里,禁止写进 `_1_control.py` 或任何 `_N` 模块**。
 
 - `setup_control()` 只设参数;`main.py` 在调 `setup_control` 之前显式 `engine.clear()`。
-- **调试期单独运行 `_1_control.py` 是安全的**(不含 clear),可以单模块重跑。
-- 详单模块重跑规则见 `osis-engine/references/incremental_rerun.md`。
+- 写回一律跑 `main.py`,见 `osis-engine/references/incremental_rerun.md`。
 
 ## 公共约定
 

@@ -17,7 +17,7 @@
 
 ## 2. create 幂等性实测矩阵
 
-**覆盖语义(同名/同号重跑 = 更新,不报错),可放心单模块重跑:**
+**覆盖语义(同名/同号重跑 = 更新,不报错):**
 
 | API | 实测依据 |
 |---|---|
@@ -125,7 +125,7 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 
 ## 7. scoped clear:按类清空,整模块重跑的另一条路(2026-07-30 立项)
 
-重跑整个非幂等模块时,除了逐对象 delete-if-exists(§3),还有更省事的一条路:**每个管理器都有自己的 `clear()`,只清本类对象,不动其他,更不做 `engine.clear()` 全清**。pyosis 源码核实:
+重跑整个非幂等模块时,除了逐对象 delete-if-exists(§3),还有更省事的一条路:**每个管理器都有自己的 `clear()`,只清本类对象,不动其他,更不做 `engine.clear()` 全清**。pyosis 源码核实(写回仍走 `main.py`;本节只用于用户明确要求不全量重建时):
 
 | 调用 | 清掉什么 |
 |---|---|

@@ -19,7 +19,7 @@ description: 边界建模模块。生成 `prep/_7_boundary.py`,创建支座约�
 
 所有 `create_*` 方法的**第一个位置参数都是 `no`(边界编号)**,不是 `node` 或 `entity`。`no` 可显式传,也可传 `None` 让 OSIS 自动分配。
 
-## 5 种边界类型
+## 6 种边界类型
 
 | 类型 | API | 用途 |
 |---|---|---|
@@ -57,8 +57,8 @@ b = engine.boundary.create_general(
 **`x/y/z/rx/ry/rz/rw` 是 0/1 标志**。
 
 **应用示例**:
-- 桥台固定端:`x=1, y=1, z=1, rx=1, ry=0, rz=0`(纵桥向可滑动)
-- 桥墩活动端:`z=1, 其余 0`
+- 固定支座(模板):`1,1,1,1,0,1,0`(x,y,z,rx,ry,rz,rw;1=约束,ry/rw 释放)
+- 纵向滑动支座(模板):`0,1,1,1,0,1,0`(再放开 x)
 
 ## 主从约束 `create_master_slave`
 
@@ -130,7 +130,7 @@ bg = engine.boundary.group.create(name, "c")  # op 必填
 
 `op` 必填,常见值:`"c"`(创建)、`"a"`(添加)、`"s"`(替换)、`"r"`(移除)、`"aa"`(全加)、`"ra"`(全删)、`"m"`(改名)、`"d"`(删除)。
 
-> **两种写法等价**:`bg = create(name, "c"); bg.add(...)` 与 `create(name, "c"); create(name, "a", ...)` 底层是同一条 `BdGrp` 命令。`create(name, "a", 2, 4)`(varargs)和 `create(name, "a", [2, 4])`(list)等价,**推荐用 varargs 形式**;`bg.add(2, 4)` 无此限制(内部自动打包成 list)——**优先用 `create(name, "c")` + `bg.add(...)`**。注意 **`add` 在返回的 `BoundaryGroup` 对象上,manager 上没有 `add`**——`engine.boundary.group.add(...)` 会抛 `AttributeError`。element.group 无此坑(其底层接口本身就是 varargs)。
+> **两种写法等价**:`bg = create(name, "c"); bg.add(...)` 与 `create(name, "c"); create(name, "a", ...)` 底层是同一条 `BdGrp` 命令。`create(name, "a", 2, 4)`(varargs)和 `create(name, "a", [2, 4])`(list)等价,**推荐用 varargs 形式**;`bg.add(2, 4)` 无此限制(内部自动打包成 list)——**优先用 `create(name, "c")` + `bg.add(...)`**。注意 **`add` 在返回的 `BoundaryGroup` 对象上,manager 上没有 `add`**——`engine.boundary.group.add(...)` 会抛 `AttributeError`。
 
 > **`create(name, "c")` 不是幂等的**:同名边界组已存在时再 `"c"` 会报"已经存在"。单模块重跑前先 `if engine.boundary.group.get(name): engine.boundary.group.delete(name)`(组删除无依赖检查,可直接用),或改用 `"s"`(替换)语义。详见 `osis-engine/references/incremental_rerun.md`。
 
@@ -151,7 +151,7 @@ stg.define_boundary(1, 1, "桥墩永久约束组")  # op=1(add), type=1(activate
 - **约束方向错** —— 7 个自由度错位(尤其 `rx/ry/rz` 与 `rw` 翘曲)
 - **墩梁固结失真** —— `create_master_slave` 没设 `coincident=1`
 - **弹性支承"弹性连接报错"** —— 刚度值过小(应该 `1e13/1e16`)
-- **`非法输入：{64}` / `AsgnBd,...,{n}`** —— `assign` 传了 Python `set`;改成 int / `"a,bto c"` / list 后 L1 重跑 `_7`
+- **`非法输入：{64}` / `AsgnBd,...,{n}`** —— `assign` 传了 Python `set`;改成 int / `"a,bto c"` / list 后跑 `main.py` 写回
 - **`Solve` / CS1「未定义边界条件,或者边界条件未定义在已激活单元上」** —— 阶段激活了 0 号块,但墩顶临时支架没挂到已激活节点(常见就是上一则 set 写法,或临时支架挂在未激活的桥台节点上)
 
 (其他见 `osis-engine/references/error_diagnosis.md`)

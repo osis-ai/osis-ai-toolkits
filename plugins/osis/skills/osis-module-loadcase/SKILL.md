@@ -45,11 +45,11 @@ lc = engine.load.create("主梁自重", load_case_type="CS", scalar=1.0)
 ## 自重(CS)
 
 ```python
-lc.create_gravity(x_coeff=0, y_coeff=0, z_coeff=1.0)
+lc.create_gravity(x_coeff=0, y_coeff=0, z_coeff=-1.04)
 ```
 
 - **参数名是 snake_case**(`x_coeff`/`y_coeff`/`z_coeff`),写成 camelCase(`dZCoeff=...`)会抛 `TypeError`
-- `z_coeff=1.0` 方向向下;`-1.04` 用于混凝土超方修正(典型值)
+- 系数乘 g,**负=向下**;模板统一 `-1.04`(1.04 计入钢筋等超重)
 - `x_coeff` / `y_coeff` 横/纵向分量,一般 0
 
 ## 二期恒载(线荷载)
@@ -60,7 +60,7 @@ lc.create_line_load(
     coord_system=0,            # 0=单元坐标系, 1=整体坐标系
     load_type=0,               # 0=连续, 1=离散
     offset_x_i=0.0, offset_x_j=1.0,    # 满布(0~1 覆盖全杆长)
-    fz_i=-22000, fz_j=-22000,          # kN/m,负值向下
+    fz_i=-22000, fz_j=-22000,          # N/m(SI),负值向下
     # 其余参数按需
 )
 ```
@@ -160,7 +160,7 @@ lc.create_prestress(
 ## 失败模式
 
 - **`工况结果不存在,请先求解`** —— 施工阶段结果按单独工况名取;调 `osis-check` 做组合,不要直接 `result.loadcase()`
-- **被 `_10` 引用时报"该工况中不存在名为 xxx"(命令流 `StgLC,...`)** —— `_10` 用了本模块没创建的名字。打开 `_8` 与 `_10` 两个文件对照工况名,改一侧到逐字一致,然后单模块验证。**禁止**不改代码直接重跑 `main.py`
+- **被 `_10` 引用时报"该工况中不存在名为 xxx"(命令流 `StgLC,...`)** —— `_10` 用了本模块没创建的名字。打开 `_8` 与 `_10` 两个文件对照工况名,改一侧到逐字一致,然后跑 `main.py` 写回。**禁止**不改代码直接重跑 `main.py`
 - **温度荷载施加失败** —— `n_entity` 传了字符串区间;改成 for 循环
 - **预应力不生效** —— `tendon.shape` 未 `layout('GLOBAL')`,或张拉力参数单位错(应该是 Pa,不是 MPa)
 - **预应力报"形状控制点坐标超出参照单元组范围"** —— 钢束 x 跨入未激活单元,缩钢束端点

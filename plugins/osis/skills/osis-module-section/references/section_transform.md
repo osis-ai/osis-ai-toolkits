@@ -36,13 +36,13 @@ engine.section.create_conventionalbox(
     name,
     h=h, bt_l=bt, bt_r=bt, bb_l=bb, bb_r=bb,
     bs=0.5, tt=0.25, tb=0.22, tw1=0.5, tw2=0.5,
-    n_cell_num=1, bi1=bi1,
+    cell_num=1, bi1=bi1,
     xi1=0.8, tt1=0.40, xi2=0, tt2=0,
     xi3=0.8, yi3=0.25, xi4=0.4, tt4=0.18,
     xi5=0.5, yi5=0.15, xi6=0.8, tt6=0.28,
     xi7=0.5, yi7=0.15,
     bc_l=bc_l, tc_l=0.18, bc1_l=0.8, tc1_l=0.45, tc2_l=0.25,
-    b_symmetry=True, e_slope_type="Integral",
+    symmetry=True, slope_type="Integral",
     no=no
 )
 ```
@@ -56,7 +56,7 @@ engine.section.create_conventionalbox(
 - **只改 `h`** —— `tb`/`tw`/`bb` 不联动 → 几何检查不过
 - **改 `bt` 但 `bc_l` 不动** —— 腹板不垂直
 - **改 `bi1` 但 `bi2~bi4` 不联动** —— 多室截面宽度不自洽
-- **横坡 `e_slope_type` 不动** —— 大跨桥改小跨后横坡不合理
+- **横坡 `slope_type` 不动** —— 大跨桥改小跨后横坡不合理
 
 ---
 
