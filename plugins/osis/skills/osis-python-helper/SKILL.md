@@ -56,7 +56,7 @@ engine.solve()
 
 ## pyosis_doc.py 用法
 
-CLI 从**当前 Python 环境**运行时反射已安装的 pyosis(只索引 `*.manager` / `*.engine` / `*.interface` / `*.static` 模块),输出签名 + 完整 docstring + 源码位置。路径写 `<skill_dir>/scripts/pyosis_doc.py`。
+CLI 从**当前 Python 环境**运行时反射已安装的 pyosis(索引全部公开模块,含 `batch`、`transfer` 等工具函数),输出签名 + 完整 docstring + 源码位置。路径写 `<skill_dir>/scripts/pyosis_doc.py`。
 
 ```bash
 # 版本与索引规模(确认反射的是不是预期环境)

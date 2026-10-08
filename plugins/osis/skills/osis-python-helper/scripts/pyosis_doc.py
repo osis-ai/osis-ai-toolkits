@@ -74,15 +74,10 @@ def build_index() -> list[ApiEntry]:
         seen.add(key)
         entries.append(ApiEntry(short=short, qual=qual, module=module, obj=obj, kind=kind))
 
-    # 覆盖 manager / engine / 少量 interface
+    # 覆盖全部公开模块(含 batch / transfer 等工具函数),跳过 _ 开头的模块
     for info in pkgutil.walk_packages(pyosis.__path__, pyosis.__name__ + "."):
         name = info.name
-        if not (
-            name.endswith(".manager")
-            or name.endswith(".engine")
-            or name.endswith(".interface")
-            or name.endswith(".static")
-        ):
+        if any(part.startswith("_") for part in name.split(".")):
             continue
         try:
             mod = importlib.import_module(name)
@@ -90,7 +85,7 @@ def build_index() -> list[ApiEntry]:
             continue
 
         for cname, cls in inspect.getmembers(mod, predicate=lambda o: _is_pyosis_class(o, name)):
-            if cls.__module__ != name and not cls.__module__.startswith("pyosis"):
+            if (cls.__module__ != name and not cls.__module__.startswith("pyosis")) or cname.startswith("_"):
                 continue
             # 类本身
             add(cname, cname, cls.__module__, cls, "class")
