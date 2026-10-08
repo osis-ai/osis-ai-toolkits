@@ -49,7 +49,7 @@ osis-ai-toolkits/
 ### Claude Code
 
 ```text
-/plugin marketplace add hahahehe-coder/osis-ai-toolkits
+/plugin marketplace add osis-ai/osis-ai-toolkits
 /plugin install osis@osis-ai-toolkits
 ```
 
@@ -58,7 +58,7 @@ osis-ai-toolkits/
 ### Codex
 
 ```text
-codex plugin marketplace add hahahehe-coder/osis-ai-toolkits
+codex plugin marketplace add osis-ai/osis-ai-toolkits
 ```
 
 然后在 Codex 的 `/plugins` 中安装 **OSIS**。

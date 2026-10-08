@@ -6,8 +6,8 @@
   "author": {
     "name": "OSIS AI Team"
   },
-  "homepage": "https://github.com/hahahehe-coder/osis-ai-toolkits",
-  "repository": "https://github.com/hahahehe-coder/osis-ai-toolkits",
+  "homepage": "https://github.com/osis-ai/osis-ai-toolkits",
+  "repository": "https://github.com/osis-ai/osis-ai-toolkits",
   "license": "MIT",
   "keywords": ["osis", "bridge", "fea", "modeling", "python"],
   "defaultEnabled": true
