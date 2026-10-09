@@ -1,6 +1,6 @@
 ---
 name: osis-auto-testconformance
-description: 桥梁构造建模正确性自动评测。在用户完成 `_1`..`_10` 模块建模(或模板套用)后,**自动**调用 `model_conformance` 评分器按桥型规则出分,生成总分 + D1~D5/D6 分项报告 + 状态(ok/warn/fail)。用于建模完工自检、模板套用核对、局部修改后验证——任何时候想确认"我做的这座桥构造是否合理"都用这个。不要和 `osis-check`(荷载/规范验算)混用。
+description: 桥梁构造建模正确性自动评测。在用户完成 `_1`..`_10` 模块建模(或模板套用)后,**自动**调用 `model_conformance` 评分器按桥型规则出分,生成总分 + D1~D5 分项报告 + 状态(ok/warn/fail)。用于建模完工自检、模板套用核对、局部修改后验证——任何时候想确认"我做的这座桥构造是否合理"都用这个。不要和 `osis-check`(荷载/规范验算)混用。
 ---
 
 # osis-auto-testconformance
@@ -47,6 +47,17 @@ description: 桥梁构造建模正确性自动评测。在用户完成 `_1`..`_1
 ## 用法 （CLI 推荐）
 
 `scripts/` 下有 `test_conformance.py`(CLI;`<skill_dir>` = 本 SKILL.md 所在目录)。
+
+**有 OSIS MCP 的 `execute_python` 就用它跑**(工具名可能带宿主前缀,按后缀认):它用 OSIS 环境的 Python,自带 pyosis,并连到指定实例,自动模式读到的就是该实例的工程。终端里的 `python` 可能没装 pyosis,多实例时还可能连错实例。`execute_python` 不收命令行参数,用 `sys.argv` + `runpy` 传:
+
+```python
+import runpy, sys
+script = r"<skill_dir>/scripts/test_conformance.py"
+sys.argv = [script, "--bridge-type", "precast_small_box", "--is-continuous", "true"]
+runpy.run_path(script, run_name="__main__")
+```
+
+总分 < 0.5 时脚本退出码 1,`execute_python` 会返回 `ok=false`(`SystemExit: 1`),报告仍在 stdout 里,照常读。没有 `execute_python` 时才用下面的终端写法。
 
 **标准模式(显式传桥型,推荐)**:
 ```bash
@@ -149,15 +160,19 @@ markdown 报告大致形如:
 
 ## 7 桥型分支
 
-| 桥型 | 目录名兜底关键字 | 规则维度 |
-|---|---|---|
-| cantilever_box | 悬浇/悬臂 | D1–D5 |
-| rigid_frame | 刚构 | D1–D6 |
-| t_girder | T 梁 / 矮 T 梁 | D1–D4(按跨中马蹄自动分流:bh≤tw+2cm→矮T) |
-| precast_small_box | 小箱梁 | D1–D4 |
-| cast_in_place_box | 现浇箱梁 | 简化 5 维 |
-| hollow_slab | 空心板 | D1–D5 |
-| unknown | 不匹配任一 | 兜底 5 维(可能不准) |
+所有桥型都出 D1–D5 五项,名称同报告标题,各项含义按桥型不同:
+
+| 桥型 | 目录名兜底关键字 | D1 | D2 | D3 | D4 | D5 |
+|---|---|---|---|---|---|---|
+| cantilever_box | 悬浇/悬臂 | 支点梁高 | 跨中梁高 | 悬浇段梁高变化曲线 | 截面常规尺寸合理性判断 | 经济性与合理性 |
+| rigid_frame | 刚构 | 支点梁高 | 跨中梁高 | 悬浇段梁高变化曲线 | 截面常规尺寸合理性判断 | 经济性与合理性(含边中跨比、墩高,无 D6) |
+| t_girder | T 梁 / 矮 T 梁 | 跨径适配性 | 高跨比 | 截面常规尺寸 | 建设期经济性 | 标准化模板化指标 |
+| precast_small_box | 小箱梁 | 跨径适配性 | 高跨比 | 截面常规尺寸 | 建设期经济性 | 标准化模板化指标 |
+| cast_in_place_box | 现浇箱梁 | 跨径适配性 | 高跨比 | 截面常规尺寸 | 建设期经济性 | 结构完整性 |
+| hollow_slab | 空心板 | 跨径适配性 | 高跨比 | 截面常规尺寸 | 截面经济性(空心率) | 建设期经济性 |
+| unknown | 不匹配任一 | 同现浇箱梁(兜底,可能不准) | | | | |
+
+T 梁按跨中马蹄自动分流:bh≤tw+2cm→矮T。
 
 上表关键字**仅供兜底**:调用方没传 `--bridge-type` 时,CLI 才用 `detect_bridge_type(目录名)` 猜。大多数用户目录名不含桥型信息,猜不中会回退 `unknown`,分数失真——所以建模 AI 调用时务必显式传参。
 

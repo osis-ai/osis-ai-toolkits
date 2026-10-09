@@ -4,9 +4,9 @@
   common.py / report.py     共享提取与报告
   bridges/                  各桥型评分器(一层一桥型)
     cantilever.py           悬浇梁 D1–D5
-    rigid_frame.py          连续刚构 D1–D6
-    t_girder.py             简支 T 梁 D1–D4
-    small_box.py            简支小箱梁 D1–D4
+    rigid_frame.py          连续刚构 D1–D5(原 D6 并入 D5)
+    t_girder.py             简支 T 梁 D1–D5
+    small_box.py            简支小箱梁 D1–D5
     hollow_slab.py          简支空心板 D1–D5
     cast_in_place.py        现浇箱梁(简化 5 维)
     unknown.py              未知桥型兜底

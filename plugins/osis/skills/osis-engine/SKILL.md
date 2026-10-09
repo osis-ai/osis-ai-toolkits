@@ -128,6 +128,15 @@ _1 控制 → _2 几何属性 → _3 材料 → _4 截面 → _5 节点
 python "<skill_dir>/scripts/seedtpl.py" --spec "<用户原话>"
 ```
 
+有 OSIS MCP 的 `execute_python` 就用它跑(OSIS 环境的 Python 自带 pyosis,且默认目标 `get_directory()` 取自指定实例;终端 `python` 可能没装 pyosis 或连错实例)。它不收命令行参数,用 `sys.argv` + `runpy` 传:
+
+```python
+import runpy, sys
+script = r"<skill_dir>/scripts/seedtpl.py"
+sys.argv = [script, "--spec", "<用户原话>"]
+runpy.run_path(script, run_name="__main__")
+```
+
 stdout 的 `共 N 个模板: [...]` 即全量名单;**未报全量不得宣布命中/近邻**。N 对不上或名单像截断 → 再跑,或 `ls` 当前桥型 `references/templates/`。只查本桥型平铺目录(没有 `<桥型>/<跨径>` 两级)。
 
 悬浇三跨只改跨径(近似命中、节段对数相同):不要手改 `_5`/`_2`,按 `osis-bridge-cantilever-box` 跑它的 `spanremap`,看 stdout 校核。失败则换同构近邻。
