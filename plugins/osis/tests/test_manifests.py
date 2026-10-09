@@ -159,7 +159,7 @@ def test_core_skill_frontmatter():
 
 def test_core_skill_declares_all_tools():
     text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
-    for tool in ("list_instances", "get_instance_info", "api_glob", "api_grep", "api_read", "execute_python"):
+    for tool in ("list_instances", "get_instance_info", "api_glob", "api_grep", "api_read", "execute_python", "execute_apdl"):
         assert tool in text, f"核心 skill 未提及 {tool}"
 
 

@@ -42,6 +42,7 @@ api_glob(pattern)                          通配符列 API(限定名 / engine.x
 api_grep(pattern)                          正则搜签名与 docstring
 api_read(symbol)                           单个 API 全文;歧义列候选
 execute_python(instance_id, code, timeout) 核心:在实例里执行 Python
+execute_apdl(instance_id, script|file)     执行 APDL 命令流(片段或 .sml/.out)
 raw_http_request(...)                      高级兼容入口,非日常工作流
 ```
 

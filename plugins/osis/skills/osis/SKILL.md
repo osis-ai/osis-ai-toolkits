@@ -21,6 +21,7 @@ description: OSIS 桥梁有限元建模的总入口（Codex / Claude Code 版）
 | `get_instance_info` | 查单个实例的项目、版本、状态，操作前二次确认 |
 | `api_glob` / `api_grep` / `api_read` | 查真实的 pyosis API —— 像 glob / grep / read 一样用（§1.2） |
 | `execute_python` | 在指定实例里执行 Python —— 核心工具 |
+| `execute_apdl` | 在指定实例里执行 APDL 命令流（片段或 `.sml` / `.out` 文件，§1.4） |
 | `raw_http_request` | 高级兼容入口，透传 OSIS HTTP API。**默认不用** |
 
 工具是远程 HTTP MCP，服务端在 Broker。**调用前先确认 Broker 可连**：若 MCP 连接失败，直接告诉用户
@@ -147,6 +148,21 @@ runpy.run_path(r"<project_dir>/py/prep/main.py", run_name="__main__")
 ```
 
 （`main.py` 自带幂等的 `sys.path` 引导，任何工作目录都能跑。）只求解不改模型时用 `engine.solve()`，不要跑 `main.py`。
+
+#### APDL 命令流
+
+用户给的是 OSIS APDL 命令流（不是 Python）时，用 `execute_apdl`，不要翻译成 pyosis：
+
+```text
+execute_apdl(instance_id="A81F", script="/PREP7
+...")          ← 命令流片段
+execute_apdl(instance_id="A81F", file="model.sml", cwd="D:/proj")  ← 已有 .sml / .out
+```
+
+- 等价于 `engine.import_apdl(路径)`（`/input`）：片段由 Broker 存成临时 `.sml`（UTF-8）再导入，用完即删。
+- `script` / `file` 二选一；`file` 相对 `cwd` 解析，路径不能含逗号。
+- 需要已打开的 OSIS 实例，**不支持** `instance_id="solver"`。
+- 返回与 `execute_python` 相同；导入失败 `ok=false`，`error.message` 里是 OSIS 的报错。
 
 #### 仅求解器模式（OSIS 未启动 / 一次性求解）
 
