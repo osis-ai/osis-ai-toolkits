@@ -25,7 +25,7 @@ description: 预制空心板。覆盖两类体系:单跨预制简支空心板(�
 | 普通钢筋 | HRB400 | JTG3362_2018 |
 | 钢绞线 | Strand1860 | GBT5224_2014 |
 
-收缩徐变:avg_humidity=70~75%, birth_time=**7d**(空心板预制短存梁,小于 T 梁的 28d), type_coeff=5.0, birth_by_shrinking=3。
+收缩徐变:avg_humidity=70~75%, type_coeff=5.0, birth_by_shrinking=3,fcuk 取引用它的混凝土等级(每个等级一条,写法见 osis-module-material)。空心板存梁龄期(7d,小于 T 梁的 28d)由施工阶段激活单元时的龄期给出。
 
 ## 截面 (→ prep/_4_section.py, osis-module-section)
 

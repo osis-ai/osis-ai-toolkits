@@ -31,7 +31,7 @@ description: 变截面连续刚构。主跨 ≥ 60m、桥墩处梁高 > 跨中�
 | 普通钢筋 | HRB400 | JTG3362_2018 |
 | 钢绞线 | Strand1860 | GBT5224_2014 |
 
-收缩徐变:avg_humidity=70~75%,birth_time=7d,type_coeff=5.0。
+收缩徐变:avg_humidity=70~75%,type_coeff=5.0,fcuk 取引用它的混凝土等级(每个等级一条,写法见 osis-module-material)。
 
 ## 截面 (→ prep/_4_section.py, osis-module-section)
 

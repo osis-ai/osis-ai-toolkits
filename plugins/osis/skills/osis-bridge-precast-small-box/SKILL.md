@@ -26,7 +26,7 @@ description: 预制小箱梁。覆盖两类体系:单跨预制简支小箱梁(�
 | 普通钢筋 | HRB400 | JTG3362_2018 |
 | 钢绞线 | Strand1860 | GBT5224_2014 |
 
-收缩徐变:avg_humidity=70~75%,birth_time=28d(预制长存梁)。
+收缩徐变:avg_humidity=70~75%,fcuk 取引用它的混凝土等级(每个等级一条,写法见 osis-module-material)。预制梁存梁龄期(28d)不在收缩徐变里,由施工阶段激活单元时的龄期给出。
 
 ## 截面 (→ prep/_4_section.py, osis-module-section)
 

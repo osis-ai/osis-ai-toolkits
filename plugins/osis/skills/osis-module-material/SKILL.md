@@ -33,27 +33,29 @@ mat.no   # 自动分配的编号
 
 ## 收缩徐变
 
-每个混凝土材料都引用一个 `creep_shrink` 编号。`creep_shrink` 通过 `engine.prop` 访问:
+每个混凝土材料都引用一个 `creep_shrink` 编号。`creep_shrink` 通过 `engine.prop` 访问。参数一律用关键字写,不要按位置传(参数顺序随 pyosis 版本变过):
 
 ```python
 engine.prop.creep_shrink.create(
-    no=1,
-    name="收缩徐变",
-    avg_humidity=75.0,      # 平均环境湿度(%)
-    birth_time=7,           # 加载龄期(天)
-    type_coeff=5.0,         # 类型系数
-    shrink_birth=3,         # 收缩起始龄期(天)。读回字段是 birth_by_shrinking
+    1, "收缩徐变C50",
+    fcuk=50e6,              # 28 天混凝土强度,按当前压力单位(默认 Pa,C50 = 50e6)
+    avg_humidity=75.0,      # 平均环境湿度(%),40~99
+    type_coeff=5.0,         # 水泥种类系数
+    birth_by_shrinking=3,   # 收缩开始龄期(天)
 )
 ```
 
-读回没有 `shrinkBirth`。创建时 pyosis 参数名仍是 `shrink_birth`，读回用 `birth_by_shrinking`。它和 `birth_time`（加载龄期）不是同一个数，不要把 `birth_by_shrinking` 改成 `birth_time`。
+- `fcuk` 在收缩徐变里,不在材料里:**不同强度等级的混凝土各建一条收缩徐变**,别让 C55 和 C40 共用一个编号。
+- `code` 默认 `JTG3362_2018`(目前只支持这一个);`component_approximate_size`(构件大致尺寸,m)默认 1.0,`fly_ash_ratio` 默认 0。
+- **没有加载龄期参数**(旧版的 `birth_time` 已去掉)。加载龄期由施工阶段激活单元时的龄期给出。
+- `shrink_birth` 是 `birth_by_shrinking` 的旧写法,仍能用,新代码写 `birth_by_shrinking`。
 
 **典型参数**:
 
-| 项目 | avg_humidity | birth_time | birth_by_shrinking |
-|---|---|---|---|
-| 主梁 | 70~75% | 7d | 3d |
-| 桥墩 | 70~75% | 7d | 3d |
+| 项目 | avg_humidity | birth_by_shrinking |
+|---|---|---|
+| 主梁 | 70~75% | 3d |
+| 桥墩 | 70~75% | 3d |
 
 > 具体项目参数由桥型层 / 项目规范给定。
 

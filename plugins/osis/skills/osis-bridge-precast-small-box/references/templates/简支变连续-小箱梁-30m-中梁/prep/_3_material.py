@@ -8,7 +8,7 @@ from pyosis.core.engine import OSISEngine
 
 def build_materials(engine: OSISEngine) -> None:
     # 创建或修改收缩徐变特性
-    engine.prop.creep_shrink.create(1, "收缩徐变", 75.0, 7, 5.0, 3)
+    engine.prop.creep_shrink.create(1, "收缩徐变", fcuk=50e6, avg_humidity=75.0, type_coeff=5.0, birth_by_shrinking=3)
     # 创建材料（便捷入口，内部转发到对应 create_* 方法）
     engine.material.create(1, "C50", "CONC", "JTG3362_2018", "C50", 1, 0.05)
     engine.material.create(2, "HRB400", "REBAR", "JTG3362_2018", "HRB400", 0.02)

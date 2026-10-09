@@ -74,13 +74,14 @@ execute_python(instance_id, code?/file?, cwd?, timeout?)
 **不允许猜测 OSIS API 名称。** 不确定就先查：
 
 ```text
-api_glob("engine.element.create_*")       列成员 / 按名找(fnmatch,不区分大小写)
+api_glob("engine.element.create_*")       列成员 / 按名找(通配符,不区分大小写)
 api_grep("梁单元")                         正则逐行搜签名与 docstring,中文概念用它
 api_read("engine.element.create_beam3d")  单个 API 全文:签名、参数、docstring、源码位置
 ```
 
 - 索引来自 OSIS 执行环境里真实 `pyosis` 包的签名与 docstring，与 `execute_python` 跑的版本一致。
-- `api_glob` 同时匹配限定名（`NodeManager.*`）和访问路径（`engine.tendon.prop.*`）；返回 `限定名(签名)  # 首行说明`。
+- `api_glob` 同时匹配限定名（`NodeManager.*`）和访问路径（`engine.tendon.prop.*`）；返回 `限定名(签名)  # 首行说明`。`*` 不跨 `.`：`engine.prop.*` 只列直接成员，整棵子树用 `engine.prop.**`；不含 `.` 的模式（`*load*`）也匹配方法短名。
+- `api_grep` 把多处共用的同一句 docstring 合并成一条 `限定名1, 限定名2: 命中行`。
 - `api_read` 接受限定名、`engine.x.y` 路径、唯一短名；类会附成员列表。
 - 同名歧义（如 `create`）或找不到 → `API_HELP_NOT_FOUND` + `candidates`，从中挑限定名再读；**不要因此断言 OSIS 不支持该功能**。
 

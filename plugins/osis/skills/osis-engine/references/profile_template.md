@@ -42,7 +42,7 @@
 - 桥墩混凝土:
 - 普通钢筋:
 - 钢绞线:
-- 收缩徐变:avg_humidity=, birth_time=
+- 收缩徐变:avg_humidity=, fcuk=(按混凝土等级,每个等级一条)
 
 ## 3. 截面
 

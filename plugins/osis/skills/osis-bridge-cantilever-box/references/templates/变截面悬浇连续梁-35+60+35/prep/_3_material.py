@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 from pyosis import batch
-from pyosis.core.batch import batch_state
 
 from pyosis.core.engine import OSISEngine
 
 def build_materials(engine: OSISEngine) -> None:
-    # OSIS 5.1 接受旧式 6 字段 CrpShrk；pyosis 0.7.5 的 create 会发送 9 字段。
-    batch_state.buffer.append("CrpShrk,1,收缩徐变,75.0,7,5.0,3;")
+    # 创建或修改收缩徐变特性
+    engine.prop.creep_shrink.create(1, "收缩徐变", fcuk=55e6, avg_humidity=75.0, type_coeff=5.0, birth_by_shrinking=3)
     # 创建材料（便捷入口，内部转发到对应 create_* 方法）
     engine.material.create(1, "C55", "CONC", "JTG3362_2018", "C55", 1, 0.05)
     engine.material.create(3, "HRB400", "REBAR", "JTG3362_2018", "HRB400", 0.05)
