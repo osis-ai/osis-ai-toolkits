@@ -142,55 +142,15 @@ def test_broker_port_consistent_across_repo():
 
 def test_single_source_of_skill():
     """skills/ 是唯一 Skill 源,Codex 与 Claude 共用同一份(禁止两套)。"""
-    assert (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").is_file()
     dirs = [p for p in (PLUGIN_ROOT / "skills").iterdir() if p.is_dir()]
     assert len(dirs) >= 1
     for d in dirs:
         assert (d / "SKILL.md").is_file(), f"{d.name} 缺 SKILL.md"
 
 
-def test_core_skill_frontmatter():
-    text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
-    assert text.startswith("---\n")
-    head = text.split("---", 2)[1]
-    assert re.search(r"^name:\s*osis\s*$", head, re.M), "核心 skill name 必须是 osis"
-    assert re.search(r"^description:\s*\S", head, re.M), "description 不能为空"
-
-
-def test_core_skill_declares_all_tools():
-    text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
-    for tool in ("list_instances", "get_instance_info", "api_glob", "api_grep", "api_read", "execute_python", "execute_apdl"):
-        assert tool in text, f"核心 skill 未提及 {tool}"
-
-
-def test_core_skill_covers_required_rules(  # 开发要求 §12 十条铁律
-):
-    text = (PLUGIN_ROOT / "skills" / "osis" / "SKILL.md").read_text(encoding="utf-8")
-    checks = {
-        "不要猜测 API": "猜测 OSIS API",
-        "先查 API": "不确定 API 时先用",
-        "显式 instance_id": "instance_id",
-        "多实例询问": "歧义",
-        "Python 优先": "Python",
-        "单一任务": "一个明确任务",
-        "结果验证": "验证",
-        "读 traceback": "traceback",
-        "不因失败否定": "不支持",
-        "不暴露端口": "端口",
-    }
-    missing = [k for k, v in checks.items() if v not in text]
-    assert not missing, f"核心 skill 缺少必备规则: {missing}"
-
-
-def test_core_skill_references_files_exist():
-    ref_dir = PLUGIN_ROOT / "skills" / "osis" / "references"
-    for name in ("concepts.md", "common-workflows.md", "troubleshooting.md", "examples.md"):
-        assert (ref_dir / name).is_file(), f"references/{name} 缺失"
-
-
 def test_skill_count():
     dirs = sorted(p.name for p in (PLUGIN_ROOT / "skills").iterdir() if p.is_dir())
-    assert "osis" in dirs, "必须有核心 skill osis"
+    assert "osis" not in dirs, "使用规矩在 Broker 的 MCP instructions 里,不要再加 osis skill"
     assert len(dirs) >= 20, f"领域 skill 复制不完整: {len(dirs)}"
 
 
@@ -204,7 +164,7 @@ def test_expected_layout():
         ".mcp.json",
         ".claude-plugin/plugin.json",
         "README.md",
-        "skills/osis/SKILL.md",
+        "skills/.synced-from",
     ):
         assert (PLUGIN_ROOT / rel).exists(), f"缺少 {rel}"
     for rel in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):

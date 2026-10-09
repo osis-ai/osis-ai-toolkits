@@ -22,9 +22,7 @@
 
 ## Skill
 
-- **`skills/osis/SKILL.md`** —— 插件自有的核心入口：Broker 工作流、实例选择、错误码应对、铁律。
-- `skills/osis/references/` —— `concepts.md` / `common-workflows.md` / `troubleshooting.md` / `examples.md`
-- 其余（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等）—— 领域 skill，**从 `osis-skill-enhance/.agents/skills` 原样同步，不要在本仓库手改**：
+- 全部是领域 skill（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等），**从 `osis-skill-enhance/.agents/skills` 原样同步，不要在本仓库手改**：
 
 ```bat
 python scripts\sync_skills.py          :: 默认源 ..\osis-skill-enhance\.agents\skills
@@ -46,6 +44,9 @@ execute_apdl(instance_id, script|file)     执行 APDL 命令流(片段或 .sml/
 raw_http_request(...)                      高级兼容入口,非日常工作流
 ```
 
+怎么用这些工具（选实例、查 API、写回、失败处理等规矩）由 Broker 在 MCP server instructions 里下发，
+各工具的参数说明在工具描述里；插件不再单独带 `osis` skill。需要 osis-broker ≥ 1.0.10。
+
 不把几百个 OSIS API 做成 Tool —— 复杂操作由 Agent 写 Python 走 `execute_python`。
 `api_*` 的内容来自 OSIS 执行环境里 `pyosis` 的真实签名与 docstring，与已安装版本对应。
 
@@ -53,7 +54,6 @@ raw_http_request(...)                      高级兼容入口,非日常工作流
 
 - **MCP 连不上** → Broker 未启动。启动 `osis-broker/scripts/run_broker.bat`，不要去猜 OSIS 端口。
 - **改了 `mcp.json` / `.mcp.json` 的端口** → 必须两边同步，且与 Broker 的 `--port` 一致。`tests/test_manifests.py` 会拦下不一致。
-- 其余（实例离线、409、超时、Python 异常、API 查不到）见 `skills/osis/references/troubleshooting.md`。
 
 ## 测试
 

@@ -17,7 +17,6 @@ REPO = Path(__file__).resolve().parents[1]
 DEST = REPO / "plugins" / "osis" / "skills"
 DEFAULT_SRC = REPO.parent / "osis-skill-enhance" / ".agents" / "skills"
 
-OWN = {"osis"}            # 插件自有(Broker 用法),不来自源仓库
 STAMP = ".synced-from"
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc")
 
@@ -47,7 +46,7 @@ def main() -> int:
 
     names = synced_names(src)
     for old in DEST.iterdir():
-        if old.is_dir() and old.name not in OWN and old.name not in names:
+        if old.is_dir() and old.name not in names:
             shutil.rmtree(old)
             print(f"删除: {old.name}")
     for name in names:

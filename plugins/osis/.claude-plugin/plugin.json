@@ -1,7 +1,7 @@
 {
   "name": "osis",
   "displayName": "OSIS",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "OSIS Agent plugin: instance selection, API help and Python execution through the local OSIS Agent Broker.",
   "author": {
     "name": "OSIS AI Team"

@@ -1,11 +1,11 @@
 # 幂等与删除命令实测手册
 
-> 写回 OSIS 一律 `python .../prep/main.py`(先 `clear()` 再整桥重建)。不要用单模块重跑代替。
-> 本文件只保留生成代码时用得上的 delete 命令和幂等事实(2026-07 实机)。下面旧的「禁止 main.py」表不再作为写回规则。
+> 写回规则见 `SKILL.md §写回`:改动只在一个模块且没改编号/名称、没删对象时可单跑该模块,其余用 `python .../prep/main.py` 全量重建。
+> 本文件保留生成代码时用得上的 delete 命令、幂等事实与单模块重跑注意事项(2026-07 实机)。
 
 ## 0. 写回
 
-改了 `py/` 就跑 `python .../prep/main.py`。不要 `python -c` 局部写回,不要单跑 `_N_xxx.py`。只求解且不改 `py/` 时用 `OSISEngine().solve()`。
+改了 `py/`:符合单模块条件就跑 `python .../prep/_N_xxx.py`(注意看 §5),否则跑 `python .../prep/main.py`。不要 `python -c` 局部写回。只求解且不改 `py/` 时用 `OSISEngine().solve()`。
 
 ## 1. 三个根因:为什么以前"改一处就要全量重建"
 
@@ -105,7 +105,7 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 
 ## 5. 各模块单模块重跑速查
 
-写回不要用这张表。改了 `py/` 跑 `main.py`。下表只说明各模块单独执行时的覆盖行为。
+单模块写回前对照此表:前置模块须已建,注意列的坑要先处理。
 
 | 模块 | 能否单跑 | 前置条件 | 注意 |
 |---|---|---|---|
@@ -118,7 +118,7 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 | `_7_boundary` | 可以 | `_5` 已建 | **边界组必须 delete-if-exists**;`b.assign` 重复执行会重复分配,重跑前可用 `assign("r", ...)` 或 `"s"` 替换 |
 | `_8_loadcase`(含钢束) | 可以 | `_3`/`_6` 已建 | **shape 必须 delete-if-exists**;工况/加载同名覆盖 |
 | `_9_analysis` | 可以 | `_5`/`_6` 已建 | 沉降组/活载等级同名覆盖 |
-| `_10_stage` | 可以 | `_6`/`_7`/`_8`/`_9` 的组名/工况名已在 | 同 no 覆盖;纯引用模块,最适合单跑 |
+| `_10_stage` | 可以 | `_6`/`_7`/`_8`/`_9` 的组名/工况名已在 | 同 no 覆盖;但已有阶段上重跑 `define_*` 会报「同一阶段内不允许重复激活单元组」——单跑前先 `engine.stage.clear()` |
 
 ## 6. 其他实测坑
 
@@ -128,7 +128,7 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 
 ## 7. scoped clear:按类清空,整模块重跑的另一条路(2026-07-30 立项)
 
-重跑整个非幂等模块时,除了逐对象 delete-if-exists(§3),还有更省事的一条路:**每个管理器都有自己的 `clear()`,只清本类对象,不动其他,更不做 `engine.clear()` 全清**。pyosis 源码核实(写回仍走 `main.py`;本节只用于用户明确要求不全量重建时):
+重跑整个非幂等模块时,除了逐对象 delete-if-exists(§3),还有更省事的一条路:**每个管理器都有自己的 `clear()`,只清本类对象,不动其他,更不做 `engine.clear()` 全清**。pyosis 源码核实(级联大,只用于用户明确要求不全量重建、又必须整模块重跑非幂等对象时):
 
 | 调用 | 清掉什么 |
 |---|---|
@@ -152,5 +152,5 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 
 ## 8. 验证
 
-写回是否成功,看这次 `main.py` 有没有无 traceback 跑完。查询类方法(`get`/`all`/`count`)可以在重建之后用来核对,不能代替重建。
+写回是否成功,看这次 `main.py` / 单模块有没有无 traceback 跑完。查询类方法(`get`/`all`/`count`)可以在重建之后用来核对,不能代替重建。
 

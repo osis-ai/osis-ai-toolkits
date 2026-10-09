@@ -16,7 +16,6 @@ osis-ai-toolkits/
     ├── .claude-plugin/plugin.json  Claude Code manifest
     ├── .mcp.json              Claude Code MCP 配置(同上,格式不同)
     ├── skills/                Codex / Claude 共用
-    │   ├── osis/SKILL.md      插件自有:MCP 用法入口
     │   ├── osis-engine/       ┐
     │   ├── osis-bridge-*/     │ 领域 skill:从 osis-skill-enhance
     │   ├── osis-module-*/     │ 原样同步(scripts/sync_skills.py),
@@ -61,7 +60,7 @@ python scripts\sync_skills.py
 %USERPROFILE%\.osisai\.venv\Scripts\python.exe -m pytest plugins/osis/tests -q
 ```
 
-覆盖：两侧 marketplace 结构、manifest 字段、MCP endpoint 一致性、端口全仓一致性、核心 Skill 的必备规则与引用文件、Skill 完整性、与源仓库同步一致；若本机服务正在运行，额外验证 MCP 可连。
+覆盖：两侧 marketplace 结构、manifest 字段、MCP endpoint 一致性、端口全仓一致性、Skill 完整性、与源仓库同步一致；若本机服务正在运行，额外验证 MCP 可连。
 
 ## 相关仓库
 
