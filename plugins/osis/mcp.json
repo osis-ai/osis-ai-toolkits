@@ -7,8 +7,8 @@
     },
     "weknora": {
       "type": "stdio",
-      "command": "python",
-      "args": ["-m", "weknora_mcp_server"],
+      "command": "cmd",
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-m", "weknora_mcp_server"],
       "env": {
         "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1",
         "WEKNORA_API_KEY": "${WEKNORA_API_KEY}"
