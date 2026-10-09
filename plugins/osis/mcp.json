@@ -8,10 +8,9 @@
     "weknora": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-m", "weknora_mcp_server"],
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "${PLUGIN_ROOT}/scripts/weknora_launch.py"],
       "env": {
-        "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1",
-        "WEKNORA_API_KEY": "${WEKNORA_API_KEY}"
+        "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1"
       }
     }
   }

@@ -115,9 +115,12 @@ def test_mcp_servers_agree():
     """两侧 MCP 只差格式(type 写法),server 集合与 stdio 启动方式必须一致。"""
     a, b = load("mcp.json")["mcpServers"], load(".mcp.json")["mcpServers"]
     assert a.keys() == b.keys()
+    # 插件根目录占位符两侧写法不同:Codex(Agent Plugins 规范)${PLUGIN_ROOT},Claude ${CLAUDE_PLUGIN_ROOT}
+    claude_args = lambda s: [x.replace("${CLAUDE_PLUGIN_ROOT}", "${PLUGIN_ROOT}") for x in s.get("args", [])]
     for name in a:
-        for key in ("command", "args", "env"):
+        for key in ("command", "env"):
             assert a[name].get(key) == b[name].get(key), f"{name}.{key} 两侧不一致"
+        assert a[name].get("args", []) == claude_args(b[name]), f"{name}.args 两侧不一致"
 
 
 def test_broker_port_consistent_across_repo():
@@ -259,3 +262,27 @@ def test_broker_endpoint_reachable_if_running():
     body = r.json()
     assert body["ok"] is True
     assert body["mcp"] == MCP_PATH
+
+
+# ---------------------------------------------------------------- WeKnora key
+
+
+def test_no_api_key_in_plugin_files():
+    """key 不进仓库(公开):由 scripts/weknora_launch.py 从环境变量 / Windows 用户变量读。"""
+    leaked = [p.name for p in PLUGIN_ROOT.rglob("*.json") if re.search(r"sk-[A-Za-z0-9_-]{20,}", p.read_text(encoding="utf-8"))]
+    assert not leaked, f"配置里出现了 API key: {leaked}"
+
+
+def test_weknora_launch_key_order(monkeypatch):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("weknora_launch", PLUGIN_ROOT / "scripts" / "weknora_launch.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    monkeypatch.setattr(mod, "user_env", lambda name: "from-registry")
+    monkeypatch.setenv("WEKNORA_API_KEY", "from-env")
+    assert mod.api_key() == "from-env"
+    monkeypatch.delenv("WEKNORA_API_KEY")
+    assert mod.api_key() == "from-registry"
+    monkeypatch.setattr(mod, "user_env", lambda name: "")
+    assert mod.api_key() == ""  # 没 key 也能启动

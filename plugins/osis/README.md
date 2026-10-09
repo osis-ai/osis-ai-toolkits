@@ -18,7 +18,7 @@
 | server | 类型 | 说明 |
 |---|---|---|
 | `osis` | HTTP `http://127.0.0.1:18080/mcp` | OSIS Agent Broker |
-| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -m weknora_mcp_server`(用 OSIS 环境的 Python;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量) | 桥梁模板/知识库检索;key 已内置在 MCP 配置里 |
+| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe <插件根>/scripts/weknora_launch.py`(用 OSIS 环境的 Python;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量;插件根 Codex 写 `${PLUGIN_ROOT}`、Claude 写 `${CLAUDE_PLUGIN_ROOT}`) | 桥梁模板/知识库检索。key 不进配置:launcher 先读环境变量 `WEKNORA_API_KEY`,没有再读 Windows 用户变量(`setx` 写的,Codex 不把用户环境变量传给 MCP 子进程);都没有也照常启动 |
 
 ## Skill
 

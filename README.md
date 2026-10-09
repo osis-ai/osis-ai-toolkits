@@ -72,4 +72,10 @@ codex plugin marketplace remove osis-ai-toolkits      :: 可选
 
 ## 可选：知识库
 
-桥梁模板检索使用 WeKnora 知识库，插件已内置访问 key，装好即可用。
+桥梁模板检索使用 WeKnora 知识库。向管理员要访问 key，在命令行设置一次（之后重开 Claude Code / Codex）：
+
+```bat
+setx WEKNORA_API_KEY 你的key
+```
+
+不设置插件也能正常打开，只是知识库查不了，会改用插件自带的本地模板。
