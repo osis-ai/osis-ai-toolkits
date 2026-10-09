@@ -72,4 +72,4 @@ codex plugin marketplace remove osis-ai-toolkits      :: 可选
 
 ## 可选：知识库
 
-桥梁模板检索使用 WeKnora 知识库，需设置环境变量 `WEKNORA_API_KEY`。不设置也能用，会改用插件自带的本地模板。
+桥梁模板检索使用 WeKnora 知识库，插件已内置访问 key，装好即可用。
