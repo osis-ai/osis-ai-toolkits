@@ -27,7 +27,7 @@ description: 验算结果检查分析工具。当用户需要(1)查看验算结�
 
 在调用此 SKILL 之前，**项目必须已构建，并且在当前这份模型上求解过**。`prep/main.py` 只重建，不产生工况结果和活载包络。如尚未验算，先执行步骤1；如已验算过且模型没再改过，跳过步骤1直接从步骤2导出结果。
 
-> **定位项目目录**：执行 `python -c "from pyosis.core.engine import OSISEngine; print(OSISEngine().project.get_directory())"` 获取 OSIS 打开的项目目录，所有文件操作基于此路径。
+> **定位项目目录**：执行 `python -c "from pyosis import OSISEngine; print(OSISEngine().project.get_directory())"` 获取 OSIS 打开的项目目录，所有文件操作基于此路径。
 
 ## 步骤1：先求解，再生成组合并验算
 
@@ -94,7 +94,7 @@ for name, df in results.items():
 ### 用户要求修改/优化/调整
 
 1. 确认项目画像存在（不存在建议先创建）
-2. 规划任务列表（用宿主的任务列表工具,如 todowrite）
+2. 用任务列表工具规划任务
 3. 导出验算结果，分析 NG 项原因
 4. 查看 py/ 模块文件获取模型信息
 5. 若存在 `py/reason_codes.yaml`（或本 skill `references/reason_codes.yaml`），定位原因时 **reason_code 必须用其中的短码**，不要自造

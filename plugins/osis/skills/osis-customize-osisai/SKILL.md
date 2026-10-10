@@ -45,7 +45,7 @@ description: >
 
 ### 1. 建目录
 
-`~/.osisai/plugins/<英文名>/`。英文名小写、简短、望文生义(现有插件:icon)。目录名即插件 ID,plugins.json 与命令路径都用它,起名后不再改。若 `plugins/` 或 `plugins.json` 还不存在:建目录,写入 `[]` 作为 `~/.osisai/plugins/plugins.json`,需要第三方依赖时再建空的 `~/.osisai/plugins/requirements.txt`。
+`~/.osisai/plugins/<英文名>/`。英文名小写、简短、望文生义。目录名即插件 ID,plugins.json 与命令路径都用它,起名后不再改。若 `plugins/` 或 `plugins.json` 还不存在:建目录,写入 `[]` 作为 `~/.osisai/plugins/plugins.json`,需要第三方依赖时再建空的 `~/.osisai/plugins/requirements.txt`。
 
 ### 2. 写 main.py —— 调用契约
 
@@ -203,8 +203,7 @@ print(dst)
        main.py
    ```
    把当前项目的 `py/prep/`(及项目根 `项目画像.md`,有则拷)拷到用户 skill 副本 `references/templates/<目录名>/`。
-6. 若该桥型 SKILL.md 里有「当前 N 个」硬编码名单,只在**用户副本**追加新目录名;查库仍以 `ls` 为准。
-7. 提醒:下次会话才加载用户覆盖层。完工报告:桥型 skill、模板路径、是否新建了用户副本、`sync_apdl` 是否成功。
+6. 提醒:下次会话才加载用户覆盖层。完工报告:桥型 skill、模板路径、是否新建了用户副本、`sync_apdl` 是否成功。
 
 ## 创建 skill
 

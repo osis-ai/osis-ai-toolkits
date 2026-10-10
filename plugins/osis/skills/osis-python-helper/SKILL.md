@@ -45,9 +45,10 @@ engine.solve()
 - **大量命令包在 `with pyosis.batch():` 里**:块内命令缓冲、退出时一次发送,快得多;块内查询会先自动冲刷;OSIS 报错抛 `BatchError`,调试可在块末尾 `pyosis.flush(isolate=True)` 定位坏命令。
 - **禁止 `engine.new_project`**——始终在已打开的项目里工作;保存用 `engine.save_project()`。
 - PropertyManager 入口是 `engine.prop`,不是 `engine.property`。
-- `TendonPropManager.create_in` 位置序:name, mat, code, diameter, num, pipe, friction_coeff, deviation_coeff, …;便捷 `create` 是 name, s_type, mat, area 再接 create_in 余参。
+- `TendonPropManager.create_in` 位置序:name, mat, code, diameter, num, pipe, friction_coeff, deviation_coeff, …;便捷 `create` 是 name, s_type, mat, area 再接 create_in 余参。摩阻等系数的默认值是 1.0/0.0 占位,必须显式传。
+- 很多荷载/边界参数默认值不是 0(如 `create_gravity` 的 `x_coeff`/`y_coeff` 默认 1.0、`create_spring` 刚度默认 10),用到的参数全部显式传。
 - `lc.gradient_temp` 读回是 list[dict],按 `entityNO` 取单条,禁止 print 全表。
-- 改构件厚度 `assign_component_thickness` 用 `op='a'`(与模板一致);docstring 的 `'s'` 在部分 OSIS 上报「编辑构件厚度有误」。
+- 改构件厚度 `assign_component_thickness` 用 `op='a'`(再次调用即覆盖);`'s'` 在部分 OSIS 上报「编辑构件厚度有误」。
 - 第一参数约定:多数 `create_*` 第一参数是 `no=None`(自动分配);例外——`stage.create` 的 no 必填 int(编号须连续),`tendon.prop` / `tendon.shape` / `load` / `settlement` / `live` / `geometry` 的 create 第一参数是 `name`。
 - 修改结构 = 同 `no` 重新 create 覆盖;新增 = 新 `no`。
 - 局部改自重/节点力/PST 等标量也先改对应 `prep/_N_xxx.py`,再按 `osis-engine` 的写回规则执行(单跑该模块或 `prep/main.py`)。

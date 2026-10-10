@@ -5,7 +5,7 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 
 # OSIS 模型视觉检查与自动修复
 
-- 不得再次调用同名 `osis-screenshot-check`。
+- 执行本技能期间不要再次加载 `osis-screenshot-check`(避免递归)。
 
 ## 接到任务后按顺序做
 
@@ -34,9 +34,9 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 - 规范化 `project_dir`，创建并复用唯一 `run_dir`。
 - 在任何视图或截图动作前执行：
 
-  ```powershell
-  python -B "<skill_dir>/scripts/capture_canvas.py" freeze-profile `
-    --project-dir "<project_dir>" --run-dir "<run_dir>" `
+  ```bash
+  python -B "<skill_dir>/scripts/capture_canvas.py" freeze-profile \
+    --project-dir "<project_dir>" --run-dir "<run_dir>" \
     --output "<run_dir>/project-profile-context.json"
   ```
 
@@ -48,8 +48,8 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 
 - 单独执行视图命令：
 
-  ```powershell
-  python -B "<skill_dir>/scripts/view_control.py" prepare `
+  ```bash
+  python -B "<skill_dir>/scripts/view_control.py" prepare \
     --preset front --project-dir "<project_dir>" --run-dir "<run_dir>"
   ```
 
@@ -64,10 +64,10 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 - 任一步失败时设置 `execution_status = blocked` 并停止。
 - 单独执行截图命令：
 
-  ```powershell
-  python -B "<skill_dir>/scripts/capture_canvas.py" capture-auto `
-    --project-dir "<project_dir>" --run-dir "<run_dir>" `
-    --output "<run_dir>/before.png" --metadata "<run_dir>/before-capture.json" `
+  ```bash
+  python -B "<skill_dir>/scripts/capture_canvas.py" capture-auto \
+    --project-dir "<project_dir>" --run-dir "<run_dir>" \
+    --output "<run_dir>/before.png" --metadata "<run_dir>/before-capture.json" \
     --timeout 30
   ```
 
@@ -81,9 +81,9 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 
 - 执行：
 
-  ```powershell
-  python -B "<skill_dir>/scripts/capture_canvas.py" crop-views `
-    --project-dir "<project_dir>" --run-dir "<run_dir>" `
+  ```bash
+  python -B "<skill_dir>/scripts/capture_canvas.py" crop-views \
+    --project-dir "<project_dir>" --run-dir "<run_dir>" \
     --source "<run_dir>/before.png" --prefix before
   ```
 
@@ -110,12 +110,12 @@ description: 执行 OSIS 模型截图、当前项目画像对照、明显视觉�
 - 按 `references/visual-rubric.md` 写入 `<run_dir>/visual-result.json`。
 - 执行：
 
-  ```powershell
-  python -B "<skill_dir>/scripts/capture_canvas.py" finalize-result `
-    --project-dir "<project_dir>" --run-dir "<run_dir>" `
-    --input "<run_dir>/visual-result.json" `
-    --output "<run_dir>/run-manifest.json" `
-    --profile-context "<run_dir>/project-profile-context.json" `
+  ```bash
+  python -B "<skill_dir>/scripts/capture_canvas.py" finalize-result \
+    --project-dir "<project_dir>" --run-dir "<run_dir>" \
+    --input "<run_dir>/visual-result.json" \
+    --output "<run_dir>/run-manifest.json" \
+    --profile-context "<run_dir>/project-profile-context.json" \
     --visual-inputs "<run_dir>/before-visual-inputs.json"
   ```
 

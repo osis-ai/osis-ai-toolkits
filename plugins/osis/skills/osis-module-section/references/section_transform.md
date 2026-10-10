@@ -10,7 +10,7 @@ Z=0 ───────── 顶面
 Z 负方向 ──── 向下
 ```
 
-所有 `create_*` 的 y、z 参数遵循此约定。`set_offset` 的 `offset_type_y="Middle"`、`offset_type_z="Top"` 是默认推荐。
+所有 `create_*` 的 y、z 参数遵循此约定。偏移默认值见 `osis-module-section` §偏移与网格。
 
 ---
 
@@ -19,13 +19,13 @@ Z 负方向 ──── 向下
 ### 核心约束
 
 - `bc_l = bt_l - bb_l`(保证腹板垂直)
-- `bs` 恒定 0.5(不随桥宽变)
+- `bs`(悬臂根部至边腹板顶内侧宽度)不随桥宽变,保持原截面值
 - **从目标尺寸反推全部几何参数,不要只改 `h`/`bt`**
 
 ### 缩放示例:`create_conventionalbox`
 
 ```python
-# 目标尺寸(唯一输入)
+# 目标尺寸
 h, bt, bb = 1.5, 5.0, 3.0
 
 # 推导
@@ -33,7 +33,7 @@ bc_l = bt - bb
 bi1 = 2 * (bt - bc_l - 0.5) - 0.8
 
 engine.section.create_conventionalbox(
-    name,
+    no, name,
     h=h, bt_l=bt, bt_r=bt, bb_l=bb, bb_r=bb,
     bs=0.5, tt=0.25, tb=0.22, tw1=0.5, tw2=0.5,
     cell_num=1, bi1=bi1,
@@ -43,7 +43,6 @@ engine.section.create_conventionalbox(
     xi7=0.5, yi7=0.15,
     bc_l=bc_l, tc_l=0.18, bc1_l=0.8, tc1_l=0.45, tc2_l=0.25,
     symmetry=True, slope_type="Integral",
-    no=no
 )
 ```
 
@@ -77,7 +76,7 @@ contour = [
     [3,  y1, z1],   # 内轮廓 2(腔室 2,顺时针)
     ...
 ]
-engine.section.create_custom(name, matrix_name, no=no)
+engine.section.create_custom(no, name, matrix_name)
 ```
 
 | 轮廓 ID | 含义 |
@@ -99,7 +98,7 @@ engine.section.create_custom(name, matrix_name, no=no)
 
 ### 场景 1:跨径变化 → 仅调梁高
 
-桥宽和室数不变,只改梁高。梁高估算:L/15 ~ L/18(跨径越大取值越小)。
+桥宽和室数不变,只改梁高(目标梁高按桥型 SKILL 取)。
 
 **分区变换**(不能全 z 等比缩放):
 
@@ -159,14 +158,14 @@ def transform_y(y):
 
 ### 场景 3:多个截面统一处理
 
-模板通常有多个截面(跨中、墩顶加厚、变宽过渡等),全部用同一套变换规则处理。每个截面的 contour_matrix 分别变换后注册为不同的 matrix 名称。
+项目通常有多个截面(跨中、墩顶加厚、变宽过渡等),全部用同一套变换规则处理。每个截面的 contour_matrix 分别变换后注册为不同的 matrix 名称。
 
 ### 注意事项
 
 - 不要全 z 等比缩放 —— 板厚、倒角会变形
 - 不要改内轮廓拓扑(三室→双室需要换模板,不能坐标变换)
 - 点序和方向不变,只改坐标值
-- 变换后验证:顶板厚、底板厚、悬臂长度需与原模板一致
+- 变换后验证:顶板厚、底板厚、悬臂长度与变换前一致
 - 注意不对称截面(边梁),y 变换要处理符号
 
 ---
@@ -179,5 +178,3 @@ def transform_y(y):
 | 改梁高但保留拓扑 | 自定义截面 contour_matrix 分区变换 |
 | 改室数(三室→双室) | 不能坐标变换,换模板 |
 | 参数化 API 没有的目标类型 | 自定义截面 `create_custom` |
-
-> ponytail: 参数化缩放覆盖 90% 场景,自定义变换仅在桥型层明确说"用 contour_matrix" 时启用。

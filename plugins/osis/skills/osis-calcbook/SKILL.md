@@ -66,7 +66,7 @@ python <skill_dir>/scripts/data.py -o 项目数据结构.json
 
 ### 2. 转换 DOCX 模板为 Markdown
 
-若用户未提供模板，使用默认模板 `<skill_dir>/templates/计算书案例.docx`。
+若用户未提供模板，使用默认模板 `<skill_dir>/templates/OSIS计算书案例.docx`。
 
 ```bash
 python <skill_dir>/scripts/docx_to_md.py "模板.docx" "裸模板.md" --h1 "一级标题" --h2 "二级标题" --h3 "三级标题"
@@ -257,14 +257,11 @@ rm -f 裸模板.md 计算书_初稿.md 计算书_填表.md
 
 ## 注意事项
 
-1. **不要提前编号**：所有编号由 `renumber.py` 最后统一生成
-2. **图片路径**：使用相对项目根目录的路径（如 `image/IMG_Structure.jpg`），不做绝对路径替换。路径来源见 `项目数据结构.json` 中的 `图片文件` 字段。
-3. **公式保留**：Word 中的 OMML 公式会自动转换为 LaTeX 格式（`$...$`）
-4. **表格占位符格式**：必须是 `| {{TABLE:path.json}} |`（包含外层的 `|`）
-5. **优先 Write，慎用 Edit**：数据驱动的确定性任务应通过 `Write` 一次性生成。`Edit` 仅用于用户提出的局部修改
-6. **及时清理**：交付前删除裸模板、初稿、填表中间件等临时文件
+1. **图片路径**：使用相对项目根目录的路径（如 `image/IMG_Structure.jpg`），不做绝对路径替换。路径来源见 `项目数据结构.json` 中的 `图片文件` 字段。
+2. **公式保留**：Word 中的 OMML 公式会自动转换为 LaTeX 格式（`$...$`）
+3. **表格占位符格式**：必须是 `| {{TABLE:path.json}} |`（包含外层的 `|`）
 
-## 避坑指南（来自实战教训）
+## 避坑指南
 
 ### 1. 生成后必须检查一遍文档
 
@@ -318,17 +315,11 @@ midas 模板的验算章节只有**包络图 + 结论文字**，没有 OSIS 模�
 | OSIS | 包络图 + 结论 + 验算数据大表格 |
 | midas | 包络图 + 结论（仅保留材料表、施工步骤、边界、支反力等汇总表） |
 
-### 7. Shell / PowerShell 编码陷阱
+### 7. 不要用 PowerShell 处理中文文件
 
-当前环境为 Windows MinGit（Git Bash），请优先使用 Bash + Python 工具链处理文件操作。`Select-String`、`Set-Content`、`Out-File` 等 PowerShell cmdlet 默认使用系统编码（Windows-1252），写入含中文的 Markdown 文件时会破坏中文字符。
+`Select-String`、`Set-Content`、`Out-File` 等 PowerShell cmdlet 默认使用系统编码，写入含中文的 Markdown 会乱码（包括 `fill_tables.py` / `renumber.py` 输出后的二次修改）。改已渲染的文件用 Edit 工具，批量替换用 Python。
 
-**解决**：涉及中文文件读写时，用 Python 脚本替代 shell 文本处理，避免 PowerShell 编码问题：
 ```bash
-# ❌ 不推荐使用 PowerShell cmdlet 处理中文 Markdown
-# (请在当前环境下避免这样做)
-# (Get-Content file.md) -replace 'a','b' | Set-Content file.md
-
-# ✅ 推荐：用 Python 脚本替代
 python - <<'PY'
 with open('file.md', 'r', encoding='utf-8') as f:
     c = f.read()
@@ -354,10 +345,6 @@ PY
 | midas | `图表` | `表格` | `--figure-prefix "图表" --table-prefix "表格"` |
 
 注意 midas 模板的表格前缀是"表格"而非"表"，如果传错参数会导致表格编号不生效。
-
-### 10. 保存中间文件用 Python 而非 PowerShell
-
-`fill_tables.py` 和 `renumber.py` 输出后需要二次修改（如图表修正、材料表行删除），这些修改必须用 Edit 工具完成，不要用 PowerShell 的 `Set-Content`，否则中文必乱码。
 
 ## 工具说明
 

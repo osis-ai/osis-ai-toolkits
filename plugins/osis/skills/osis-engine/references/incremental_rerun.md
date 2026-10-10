@@ -1,25 +1,17 @@
-# 幂等与删除命令实测手册
+# 幂等与删除命令手册
 
 > 写回规则见 `SKILL.md §写回`:改动只在一个模块且没改编号/名称、没删对象时可单跑该模块,其余用 `python .../prep/main.py` 全量重建。
-> 本文件保留生成代码时用得上的 delete 命令、幂等事实与单模块重跑注意事项(2026-07 实机)。
+> 本文件保留生成代码时用得上的 delete 命令、幂等事实与单模块重跑注意事项。
 
 ## 0. 写回
 
-改了 `py/`:符合单模块条件就跑 `python .../prep/_N_xxx.py`(注意看 §5),否则跑 `python .../prep/main.py`。不要 `python -c` 局部写回。只求解且不改 `py/` 时用 `OSISEngine().solve()`。
+改了 `py/`:符合单模块条件就跑 `python .../prep/_N_xxx.py`(注意看 §4),否则跑 `python .../prep/main.py`。不要 `python -c` 局部写回。只求解且不改 `py/` 时用 `OSISEngine().solve()`。
 
-## 1. 三个根因:为什么以前"改一处就要全量重建"
-
-| 根因 | 现象 | 解法 |
-|---|---|---|
-| `engine.clear()` 写在 `main.py` 入口 | 跑 `main.py` = 清空全桥重来 | 这就是现在的写回方式。生成代码时组/形状仍写 delete-if-exists(见 §3) |
-| 单元组/边界组/钢束形状的 `create` 非幂等 | 重跑 `_6`/`_7`/`_8` 报"已经存在" | 生成代码时一律写 delete-if-exists(见 §3);整模块重跑也可 scoped clear(见 §7) |
-| pyosis `delete()` 依赖 `GetReferences` 接口,部分 OSIS 版本不通 | 删对象抛"接口不通: GetReferences" | 用组删除或原始命令(见 §4) |
-
-## 2. create 幂等性实测矩阵
+## 1. create 幂等性矩阵
 
 **覆盖语义(同名/同号重跑 = 更新,不报错):**
 
-| API | 实测依据 |
+| API | 语义 |
 |---|---|
 | `node.create(no, ...)` | 同 no 重跑覆盖 |
 | `material.create_conc/create_steel/...` | 同 no 覆盖 |
@@ -37,13 +29,13 @@
 
 **非幂等(同名报"已经存在"/"创建失败"),重跑前必须 delete-if-exists:**
 
-| API | 报错原文(实测) |
+| API | 报错原文 |
 |---|---|
 | `element.group.create(name, "c")` | 单元组[name]已经存在 |
 | `boundary.group.create(name, "c")` | 边界组已存在 |
 | `tendon.shape.create_arc2d/arc3d/spl3d` | 创建钢束形状 [name] 失败 |
 
-## 3. 生成代码时的幂等写法(强制)
+## 2. 生成代码时的幂等写法(强制)
 
 `_6_element.py` / `_7_boundary.py` / `_8_loadcase.py` 中,组和钢束形状创建**一律**写成:
 
@@ -82,9 +74,9 @@ def main(engine=None) -> None:
         # ... 其余模块
 ```
 
-## 4. 删除方式对照表(绕过 GetReferences 不通)
+## 3. 删除方式对照表(绕过 GetReferences 不通)
 
-pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.shape/live.grade` 的 `delete()` 内部先调 `get_dependencies()` → `GetReferences` HTTP 接口;该接口在部分 OSIS 版本不存在(报"接口不通: GetReferences"),导致这些 `delete()` **整体不可用**。实测可用的替代:
+pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.shape/live.grade` 的 `delete()` 内部先调 `get_dependencies()` → `GetReferences` HTTP 接口;该接口在部分 OSIS 版本不存在(报"接口不通: GetReferences"),导致这些 `delete()` **整体不可用**。可用的替代:
 
 | 对象 | 推荐删除方式 |
 |---|---|
@@ -103,7 +95,7 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 
 注意:绕过依赖检查的删除可能留下悬空引用(例如删了仍被单元引用的截面),只用于"准备立刻重建该对象"的场景——这正是 delete-if-exists 的用途。
 
-## 5. 各模块单模块重跑速查
+## 4. 各模块单模块重跑速查
 
 单模块写回前对照此表:前置模块须已建,注意列的坑要先处理。
 
@@ -120,15 +112,15 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 | `_9_analysis` | 可以 | `_5`/`_6` 已建 | 沉降组/活载等级同名覆盖 |
 | `_10_stage` | 可以 | `_6`/`_7`/`_8`/`_9` 的组名/工况名已在 | 同 no 覆盖;但已有阶段上重跑 `define_*` 会报「同一阶段内不允许重复激活单元组」——单跑前先 `engine.stage.clear()` |
 
-## 6. 其他实测坑
+## 5. 其他坑
 
 - `engine.model_summary()` 在缺 `GetAllRespSpecInfo` 接口的 OSIS 版本上抛"接口不通"(卡在 `dynamic.count()`)。改用分项:`e.node.count()` `e.element.count()` `e.material.count()` `e.section.count()` `e.load.count()` `e.stage.count()` `e.geometry.count()` `e.tendon.count()`(返回 `{"props": n, "shapes": n}`)。
 - `StageManager` 无 `rename`;阶段改名用同 `no` 重新 `create(no, 新名, duration)`。
 - 查询类方法(`get`/`all`/`count`)随时可用,不影响模型状态;重跑模块后先查 count 验证再进下一步。
 
-## 7. scoped clear:按类清空,整模块重跑的另一条路(2026-07-30 立项)
+## 6. scoped clear:按类清空,整模块重跑的另一条路
 
-重跑整个非幂等模块时,除了逐对象 delete-if-exists(§3),还有更省事的一条路:**每个管理器都有自己的 `clear()`,只清本类对象,不动其他,更不做 `engine.clear()` 全清**。pyosis 源码核实(级联大,只用于用户明确要求不全量重建、又必须整模块重跑非幂等对象时):
+重跑整个非幂等模块时,除了逐对象 delete-if-exists(§2),还有更省事的一条路:**每个管理器都有自己的 `clear()`,只清本类对象,不动其他,更不做 `engine.clear()` 全清**。级联大,只用于用户明确要求不全量重建、又必须整模块重跑非幂等对象时:
 
 | 调用 | 清掉什么 |
 |---|---|
@@ -146,11 +138,11 @@ pyosis 的 `node/element/section/material/boundary/loadcase/tendon.prop/tendon.s
 - 重跑 `_8_loadcase`:`stage.clear()` → `tendon.clear()` + `load.clear()`,然后重跑 `_8`;`_10_stage` 必须跟着重跑(阶段已被清掉)。
 - 重跑 `_6_element`:`stage.clear()` → `tendon.clear()`(钢束形状引用单元组)→ `element.group.clear()`,然后重跑 `_6`;`_8`/`_10` 跟着重跑。
 - 重跑 `_2_property`(改样条):`stage.clear()` → `tendon.clear()`(钢束形状按名引用曲线)→ `geometry.clear()`,然后重跑 `_2`;`_8`/`_10` 跟着重跑。
-- 越上游级联越大。只想改一两根钢束/一两个组时别用 clear,退回 §3 的 delete-if-exists 粒度更细、无级联。
+- 越上游级联越大。只想改一两根钢束/一两个组时别用 clear,退回 §2 的 delete-if-exists 粒度更细、无级联。
 
-**版本警告**:clear 内部走各对象的 `delete()`,对象级 delete 依赖 `GetReferences` 接口(§4);在该接口不通的 OSIS 版本上,对象级 clear 同样失败(组级 clear 不受影响)。遇此情况退回 §4 的原始命令逐个删。
+**版本警告**:clear 内部走各对象的 `delete()`,对象级 delete 依赖 `GetReferences` 接口(§3);在该接口不通的 OSIS 版本上,对象级 clear 同样失败(组级 clear 不受影响)。遇此情况退回 §3 的原始命令逐个删。
 
-## 8. 验证
+## 7. 验证
 
 写回是否成功,看这次 `main.py` / 单模块有没有无 traceback 跑完。查询类方法(`get`/`all`/`count`)可以在重建之后用来核对,不能代替重建。
 

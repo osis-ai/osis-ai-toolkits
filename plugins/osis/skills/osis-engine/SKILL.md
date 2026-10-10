@@ -193,16 +193,14 @@ OSIS 是状态化软件:模型数据驻留在 OSIS 进程内,不在 `py/` 文件
 
 **改代码 ≠ 写回 OSIS**。`.py` 只是磁盘脚本。改完 `.py` 后、向用户报完工前,**同一轮执行写回**,二选一:
 
-- **单跑模块** `python <project_dir>/py/prep/_N_xxx.py`:每个模块的 `__main__` 只在 `batch()` 里执行本模块,不清模型。仅当**改动只在这一个模块、且没改对象编号/名称、没删对象**时用(同号/同名重跑即覆盖)。前置模块、组的 delete-if-exists、`_7` 的 `assign` 重复分配等注意见 `references/incremental_rerun.md §5`。
+- **单跑模块** `python <project_dir>/py/prep/_N_xxx.py`:每个模块的 `__main__` 只在 `batch()` 里执行本模块,不清模型。仅当**改动只在这一个模块、且没改对象编号/名称、没删对象**时用(同号/同名重跑即覆盖)。前置模块、组的 delete-if-exists、`_7` 的 `assign` 重复分配等注意见 `references/incremental_rerun.md §4`。
 - **全量重建** `python <project_dir>/py/prep/main.py`:先 `clear()` 再按 `_1`..`_10` 整桥重建。改动跨多个模块、改了编号/名称、删了对象、失败修复、`osis-edit-hmid`,以及拿不准时,一律用它。
 
 禁止未执行时说「已完成 / 已改好 / 功能已加上」;未跑完最多说「代码已改,正在执行写回」。例外仅当用户明确说「先别跑 / 只改代码不要执行 / dry-run」,报告写明「按用户要求未执行」。
 
 只求解、不改模型: `OSISEngine().solve()`,不要 `main.py`。
 
-`add_rebar_s("ShearStirrup", ...)` 在截面上已有同类型箍筋时,OSIS 可能仍返回成功、模型却不更新。生成 `_4` 时对已有箍筋先 `delete_rebar_s("ShearStirrup")` 再 add。不要给模板 `_4` 首次建模嵌一套 [VERIFY] 打印块。
-
-**查 API 优先顺序**(写新代码时):① OSIS MCP 的 `api_glob` / `api_grep` / `api_read`(用法要点与坑见 `osis-python-helper`)→ ② `osis-module-*` SKILL / 模板 `prep/_N` → ③ pyosis 源码。不去 WeKnora 查 API。Stage 工期属性是 `.duration`(无 `get_duration()`)。用户问「有哪些知识库」必须调 Weknora,不得用 SKILL 列表代替。
+**查 API 优先顺序**(写新代码时):① OSIS MCP 的 `api_glob` / `api_grep` / `api_read`(用法要点与坑见 `osis-python-helper`)→ ② `osis-module-*` SKILL / 模板 `prep/_N` → ③ pyosis 源码。不去 WeKnora 查 API。用户问「有哪些知识库」必须调 Weknora,不得用 SKILL 列表代替。
 
 ### 改跨中梁高 → `osis-edit-hmid`
 
