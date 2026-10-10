@@ -1,7 +1,7 @@
 {
   "name": "osis",
   "displayName": "OSIS",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "description": "OSIS 桥梁设计分析软件的 AI 插件：同时连接并控制本机多个 OSIS 实例，按真实 Python API 建模、改模型、跑计算，内置常用桥型模板与建模技能，全程在本机运行。AI plugin for OSIS bridge design & analysis software: connect to and control multiple local OSIS instances, build and edit models and run analyses with the real Python API, with built-in bridge templates and modeling skills. Runs entirely on your machine.",
   "author": {
     "name": "OSIS AI Team"

@@ -1,7 +1,7 @@
 ---
 name: osis-python-helper
 description: >
-  pyosis 用法要点与查签名看不出来的坑。生成 pyosis 代码、解决 pyosis 报错时使用。
+  pyosis 用法要点与查签名看不出来的坑。生成 pyosis 代码、解决 pyosis 报错、开发调用 pyosis 的独立 Python 项目时使用。
   具体签名/参数用 OSIS MCP 的 api_glob / api_grep / api_read 现场查,不要凭印象写,不要去知识库查 API。
   禁止默认通读 manager.py;api_* 不够或需看实现细节时再打开源码。
 ---
@@ -9,7 +9,7 @@ description: >
 # pyosis 助手
 
 pyosis 是 OSIS 的 Python 建模库(Manager 模式),通过 HTTP 控制已打开的 OSIS。
-脚本经 OSIS MCP 的 `execute_python` 执行,连接由 Broker 注入,代码里不要自己指定端口。
+Agent 里的脚本经 OSIS MCP 的 `execute_python` 执行,连接由 Broker 注入,代码里不要自己指定端口;用户自己的独立项目见 §独立 Python 项目。
 
 ## 核心模式
 
@@ -30,6 +30,16 @@ engine.solve()
 - Manager 一律经 `engine.<name>` 访问:material / section / node / element / boundary / load / tendon(含 prop、shape)/ stage / live / settlement / stability / dynamic / post / result / control / geometry / prop / thickness / project。
 - 各 Manager 有通用入口 `create(no, type, **kwargs)`,按 type 字符串转发到 `create_<type>`。
 - `create` / `get` 返回 dataclass,操作下沉到对象(如 `lc.create_gravity()`、`grp.add(1, 2)`)。
+
+## 独立 Python 项目
+
+用户开发自己的 Python 项目(如读外部数据库再建模)时,代码运行在用户自己的环境里,不经过 `execute_python`,交付的代码不依赖 MCP:
+
+- **安装**:`uv add osis-python` 或 `pip install osis-python`,导入名是 `pyosis`。PyPI 上叫 `pyosis` 的是无关的包,不要装。和项目其他依赖(数据库驱动等)放在同一个环境,一个进程完成读库和建模。
+- **连接**:零参数 `OSISEngine()` 即可,请求发到 Broker(`127.0.0.1:18080`,随 OSIS 启动),由 Broker 转给默认实例。运行前先打开 OSIS;代码里不写端口,不直连实例端口。
+- **指定实例**:运行前设环境变量 `OSIS_URL=http://127.0.0.1:18080/instances/<instance_id>`(实例列表见 `GET http://127.0.0.1:18080/instances` 或 MCP `list_instances`);不设就是默认实例。
+- **开发阶段**:签名用 `api_glob` / `api_grep` / `api_read` 查;代码片段先用 `execute_python` 在 OSIS 里试,再写进项目。
+- **校核**:建模后读回校核(如 `engine.model_summary()`),不要只看脚本没报错。
 
 ## 查 API
 
