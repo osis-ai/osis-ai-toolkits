@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "name": "osis",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "displayName": "OSIS",
-  "description": "连接本机已打开的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software running on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
+  "description": "连接本机的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
   "author": "OSIS AI Team",
   "icon": "assets/icon.png",
   "category": "Productivity",

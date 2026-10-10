@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "osis",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "description": "OSIS 桥梁设计分析软件的 AI 插件：同时连接并控制本机多个 OSIS 实例，按真实 Python API 建模、改模型、跑计算，内置常用桥型模板与建模技能，全程在本机运行。AI plugin for OSIS bridge design & analysis software: connect to and control multiple local OSIS instances, build and edit models and run analyses with the real Python API, with built-in bridge templates and modeling skills. Runs entirely on your machine.",
   "author": {
     "name": "OSIS AI Team"
@@ -21,9 +21,9 @@
       "interface": {
         "displayName": "OSIS",
         "shortDescription": "用 AI 操作 OSIS 桥梁设计分析软件 | Drive OSIS bridge design & analysis software with AI",
-        "longDescription": "连接本机已打开的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software running on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
+        "longDescription": "连接本机的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
         "developerName": "OSIS AI Team",
-        "websiteURL": "https://www.osisbim.com/osis/home/",
+        "websiteURL": "https://github.com/osis-ai/osis-ai-toolkits",
         "category": "Productivity",
         "composerIcon": "./assets/icon.png",
         "logo": "./assets/icon.png",
