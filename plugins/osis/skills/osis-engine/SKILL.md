@@ -23,7 +23,7 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 | 模板匹配 | 本文件 §模板优先策略(WeKnora 优先,失效再 `seedtpl`),各 bridge `references/templates/` |
 | 荷载组合与规范验算 | `osis-check` |
 | 生成计算书 | `osis-calcbook` |
-| pyosis API 用法(MCP `api_glob`/`api_grep`/`api_read`,无则 `pyosis_doc.py`) | `osis-python-helper` |
+| pyosis 用法要点与坑(签名用 MCP `api_glob`/`api_grep`/`api_read` 查) | `osis-python-helper` |
 | 改跨中梁高 / h_mid | `osis-edit-hmid` |
 | 建模完成后构造正确性自动评测 | `osis-auto-testconformance` |
 | 自定义插件、用户/官方 skill、模型入库 | `osis-customize-osisai` |
@@ -210,7 +210,7 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 `add_rebar_s("ShearStirrup", ...)` 在截面上已有同类型箍筋时,OSIS 可能仍返回成功、模型却不更新。生成 `_4` 时对已有箍筋先 `delete_rebar_s("ShearStirrup")` 再 add。不要给模板 `_4` 首次建模嵌一套 [VERIFY] 打印块。
 
-**查 API 优先顺序**(写新代码时):① OSIS MCP 的 `api_glob` / `api_grep` / `api_read`(无则 `osis-python-helper` 的 `pyosis_doc.py`)→ ② `osis-module-*` SKILL / 模板 `prep/_N` → ③ pyosis 源码。不去 WeKnora 查 API。Stage 工期属性是 `.duration`(无 `get_duration()`)。用户问「有哪些知识库」必须调 Weknora,不得用 SKILL 列表代替。
+**查 API 优先顺序**(写新代码时):① OSIS MCP 的 `api_glob` / `api_grep` / `api_read`(用法要点与坑见 `osis-python-helper`)→ ② `osis-module-*` SKILL / 模板 `prep/_N` → ③ pyosis 源码。不去 WeKnora 查 API。Stage 工期属性是 `.duration`(无 `get_duration()`)。用户问「有哪些知识库」必须调 Weknora,不得用 SKILL 列表代替。
 
 ### 改跨中梁高 → `osis-edit-hmid`
 
