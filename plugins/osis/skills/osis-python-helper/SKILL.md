@@ -36,9 +36,9 @@ engine.solve()
 用户开发自己的 Python 项目(如读外部数据库再建模)时,代码运行在用户自己的环境里,不经过 `execute_python`,交付的代码不依赖 MCP:
 
 - **安装**:`uv add osis-python` 或 `pip install osis-python`,导入名是 `pyosis`。PyPI 上叫 `pyosis` 的是无关的包,不要装。和项目其他依赖(数据库驱动等)放在同一个环境,一个进程完成读库和建模。
-- **连接**:零参数 `OSISEngine()` 即可,请求发到 Broker(`127.0.0.1:18080`,随 OSIS 启动),由 Broker 转给默认实例。运行前先打开 OSIS;代码里不写端口,不直连实例端口。
+- **连接**:零参数 `OSISEngine()` 即可,请求发到 Broker(`127.0.0.1:18080`,随 OSIS 启动),由 Broker 转给默认实例。运行前先打开 OSIS;代码里不写端口,不直连实例端口。默认实例(首个就绪的 OSIS)关闭后不会自动换到其他实例,此时脚本报错,需重开 OSIS 或设 `OSIS_URL`。
 - **指定实例**:运行前设环境变量 `OSIS_URL=http://127.0.0.1:18080/instances/<instance_id>`(实例列表见 `GET http://127.0.0.1:18080/instances` 或 MCP `list_instances`);不设就是默认实例。
-- **开发阶段**:签名用 `api_glob` / `api_grep` / `api_read` 查;代码片段先用 `execute_python` 在 OSIS 里试,再写进项目。
+- **开发阶段**:签名用 `api_glob` / `api_grep` / `api_read` 查;代码片段先用 `execute_python` 在 OSIS 里试,再写进项目。`api_*` 与 `execute_python` 对应 OSIS 环境里的 pyosis 版本,和用户从 PyPI 装的最新版可能不同,以用户环境实际运行为准。
 - **校核**:建模后读回校核(如 `engine.model_summary()`),不要只看脚本没报错。
 
 ## 查 API
