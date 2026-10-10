@@ -38,7 +38,6 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 - **只动 `py/`**:不创建/修改/删除 `image/` `Check/` `Result/` `secmesh/` 等 OSIS 自动目录
 - **改模型必改画像**:同步更新 `项目画像.md`,字段缺失留 `<!-- TODO -->`
 - **组名逐字一致**:`_6` 组名被 `_8`/`_9`/`_10` 引用,差字符报"组不存在"
-- **用户记忆**:有 `osis-memory` 工具就用;否则按需读写 `~/.osisai/memory/PROFILE.md`
 - **构造评测**:完整建模(含直接复制/小修)完成后自动调 `osis-auto-testconformance`,总分/评级/偏差项写入完工报告,是否按偏差调整由用户定。"越快越好"不压缩评测
 
 ## 接到任务后,先做这些
@@ -128,7 +127,7 @@ _1 控制 → _2 几何属性 → _3 材料 → _4 截面 → _5 节点
 python "<skill_dir>/scripts/seedtpl.py" --spec "<用户原话>"
 ```
 
-有 OSIS MCP 的 `execute_python` 就用它跑(OSIS 环境的 Python 自带 pyosis,且默认目标 `get_directory()` 取自指定实例;终端 `python` 可能没装 pyosis 或连错实例)。它不收命令行参数,用 `sys.argv` + `runpy` 传:
+有 OSIS MCP 的 `execute_python` 就用它跑(原因见 §执行方式;默认目标 `get_directory()` 也取自该实例)。它不收命令行参数,用 `sys.argv` + `runpy` 传:
 
 ```python
 import runpy, sys
@@ -190,13 +189,6 @@ stdout 的 `共 N 个模板: [...]` 即全量名单;**未报全量不得宣布�
 
 OSIS 是状态化软件:模型数据驻留在 OSIS 进程内,不在 `py/` 文件里。所有操作围绕这一点展开。
 
-### Engine 实例化与模块入口
-
-```python
-from pyosis import OSISEngine
-engine = OSISEngine()   # 自动检测当前打开的项目
-```
-
 ### 写回:单模块或全量重建
 
 **改代码 ≠ 写回 OSIS**。`.py` 只是磁盘脚本。改完 `.py` 后、向用户报完工前,**同一轮执行写回**,二选一:
@@ -216,13 +208,15 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 用户要改跨中梁高 / h_mid / 跨中截面高度:**只加载 `osis-edit-hmid`**,按其步骤改 `_4`(必要时 `_5`)。改完跑 `main.py` 写回。**禁止**改钢束、禁止构造评测。
 
-### 两种执行模式
+### 执行方式
 
-| 模式 | 命令 | 用途 |
+| 场景 | 命令 | 说明 |
 |---|---|---|
-| 改了 `py/` 的写回(全量) | `python <project_dir>/py/prep/main.py` | 先 `clear()` 再整桥重建 |
-| 改了 `py/` 的写回(单模块) | `python <project_dir>/py/prep/_N_xxx.py` | 只执行本模块,条件见 §写回 |
+| 写回(全量) | `python <project_dir>/py/prep/main.py` | 先 `clear()` 再整桥重建 |
+| 写回(单模块) | `python <project_dir>/py/prep/_N_xxx.py` | 只执行本模块,条件见 §写回 |
 | 求解已有模型 | `python -c "from pyosis import OSISEngine; OSISEngine().solve()"` | 模型已在 OSIS 中,只求解,不改 `py/` |
+
+**有 OSIS MCP 的 `execute_python` 就优先用它**:脚本路径传 `file=`,求解这类一两行的传 `code=`。它用 OSIS 环境的 Python(自带 pyosis)并连到当前实例;终端 `python` 可能没装 pyosis,开了多个 OSIS 时还可能连错。全量重建耗时长,`timeout` 给足(如 600)。没有 MCP 时才用上表的终端命令。
 
 > `clear()` 只在 `main.py` 入口处。单跑 `_N_xxx.py` 不清空全桥:删掉的对象不会消失,改了编号/名称会留下旧对象,这些情况必须全量重建。
 
@@ -234,10 +228,7 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 
 `main.py` 与 `_N_xxx.py` 入口都有幂等的 `sys.path.insert`,从任何目录跑都能 import 同目录的 `_0_engine.py`。`OSISEngine()` 实例化时自动连接当前打开的 OSIS 项目,**不需要 `cd`**。
 
-**绝对禁止**:
-- `python prep/main.py --solve` —— 当前 `main.py` 不接受该参数
-- 修改后不重新运行 / **只改代码不执行** —— 违规。OSIS 不会感知 `py/` 文件变化
-- **未修改任何 `.py` 就重跑 `main.py`** —— 必然在同一处再次报错,构成死循环(见 §失败修复流程)
+`main.py` 不接受命令行参数,不要写 `python prep/main.py --solve`。只改代码不执行、未改代码就重跑 `main.py` 的禁令见 §写回 与 §失败修复流程。
 
 ### Engine 便捷操作
 
@@ -245,7 +236,7 @@ engine = OSISEngine()   # 自动检测当前打开的项目
 from pyosis import OSISEngine
 e = OSISEngine()
 
-e.clear()                # 清空模型(慎用,需用户确认;只允许出现在 main.py 全量入口,见 §幂等与增量重跑)
+e.clear()                # 清空模型(慎用,需用户确认;只允许出现在 main.py 全量入口,见 §幂等)
 e.clc()                  # 清屏
 e.solve()                # 求解
 e.replot()               # 重绘
@@ -255,13 +246,11 @@ e.export_apdl(path)      # 导出前处理状态为 .out
 e.import_apdl(path)      # 读 .out / .sml
 ```
 
-`OSISEngine()` 实例化时自动检测当前打开的项目并连接,无需手动 `open_project` / `create_project`。
-
 后处理(验算、计算书)交给 `osis-check` / `osis-calcbook`,**不在本流程内**读结果。
 
 ## 幂等(生成代码时)
 
-全量重建靠 `main.py` 里的 `clear()`,不靠单模块重跑。生成 `_6`/`_7`/`_8` 时,组/形状创建仍写成 delete-if-exists,避免同一次重建里同名创建失败。可用的删除方式见 `references/incremental_rerun.md`。
+全量重建靠 `main.py` 里的 `clear()`;单跑模块靠同号/同名覆盖(适用条件见 §写回)。生成 `_6`/`_7`/`_8` 时,组/形状创建写成 delete-if-exists,单跑模块或同一次重建里同名创建都不会失败。可用的删除方式见 `references/incremental_rerun.md`。
 
 ## 失败修复流程(铁律)
 
