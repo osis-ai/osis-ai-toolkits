@@ -2,7 +2,7 @@
 
 用户文档见 `README.md`；本文件写给维护本仓库的人和 Agent。
 
-一个 Git 仓库同时服务 **Codex** 和 **Claude Code**：共享同一份 Skill、同一套 MCP server、同一套测试，只针对不同宿主维护很薄的 manifest 适配。`osis` MCP 是 stdio：`python -m osis_broker --stdio` 自动拉起/复用本机 `127.0.0.1:18080` 上的 Broker 并转发（服务端在 `osis-broker` 仓库，通信契约见 `osis-broker/docs/contract.md`）。
+一个 Git 仓库同时服务 **Codex** 和 **Claude Code**：共享同一份 Skill、同一套 MCP server、同一套测试，只针对不同宿主维护很薄的 manifest 适配。`osis` MCP 是 stdio：`python -P -m osis_broker --stdio` 自动拉起/复用本机 `127.0.0.1:18080` 上的 Broker 并转发（服务端在 `osis-broker` 仓库，通信契约见 `osis-broker/docs/contract.md`）。
 
 ## 仓库结构
 
@@ -60,7 +60,7 @@ python scripts\sync_skills.py
 %USERPROFILE%\.osisai\.venv\Scripts\python.exe -m pytest plugins/osis/tests -q
 ```
 
-覆盖：两侧 marketplace 结构、manifest 字段、MCP endpoint 一致性、端口全仓一致性、Skill 完整性、与源仓库同步一致；若本机服务正在运行，额外验证 MCP 可连。
+覆盖：两侧 marketplace 结构、manifest 字段、两侧 MCP 配置一致（stdio 启动命令）、端口全仓一致性、Skill 完整性、与源仓库同步一致；若本机服务正在运行，额外验证 MCP 可连。
 
 ## 相关仓库
 

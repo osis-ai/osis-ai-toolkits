@@ -10,6 +10,7 @@
 
 - OSIS 版本 **> 5.01**
 - 使用时 OSIS 已打开
+- OSIS 的 Python 环境 `%USERPROFILE%\.osisai\.venv` 里装有 osis-broker **≥ 1.0.12**（插件靠它启动 MCP，不用手动启动 Broker）
 
 ## 安装
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "osis",
-  "version": "0.2.12",
-  "description": "OSIS Agent plugin for Codex and Claude Code. Talks to the local OSIS Agent Broker over HTTP so agents never need to know real OSIS ports.",
+  "version": "0.2.13",
+  "description": "OSIS Agent plugin for Codex and Claude Code. Starts (or reuses) the local OSIS Agent Broker over stdio, so agents never need to know real OSIS ports.",
   "author": {
     "name": "OSIS AI Team"
   },
@@ -24,6 +24,8 @@
         "longDescription": "Select an OSIS instance, look up the real OSIS Python API and run Python against the open model. All traffic stays on 127.0.0.1 through the OSIS Agent Broker.",
         "developerName": "OSIS AI Team",
         "category": "Productivity",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png",
         "capabilities": ["Read", "Write"],
         "defaultPrompt": [
           "List the OSIS models I have open.",

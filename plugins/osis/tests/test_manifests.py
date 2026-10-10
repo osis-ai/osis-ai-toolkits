@@ -50,6 +50,12 @@ def test_codex_portable_manifest():
     assert m.get("description")
 
 
+def test_codex_icons_exist():
+    ui = load("plugin.json")["extensions"]["com.openai"]["interface"]
+    for key in ("composerIcon", "logo"):
+        assert ui[key].startswith("./") and (PLUGIN_ROOT / ui[key][2:]).is_file(), key
+
+
 def test_codex_mcp_config():
     c = load("mcp.json")
     assert c["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
