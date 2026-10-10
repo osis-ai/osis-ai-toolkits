@@ -1,0 +1,16 @@
+{
+  "name": "osis-ai-toolkits",
+  "owner": {
+    "name": "OSIS AI Team"
+  },
+  "metadata": {
+    "description": "Marketplace for OSIS agent toolkits (Qoder)"
+  },
+  "plugins": [
+    {
+      "name": "osis",
+      "source": "./plugins/osis",
+      "description": "OSIS Agent plugin: instance selection, API help and Python execution through the local OSIS Agent Broker"
+    }
+  ]
+}

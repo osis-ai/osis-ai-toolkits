@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "name": "osis",
+  "version": "0.2.17",
+  "displayName": "OSIS",
+  "description": "Drive the local OSIS bridge modeling app: select an instance, look up the real OSIS Python API and run Python against the open model through the local OSIS Agent Broker.",
+  "author": "OSIS AI Team",
+  "icon": "assets/icon.png",
+  "category": "Productivity",
+  "exampleQueries": [
+    "List the OSIS models I have open.",
+    "Check the current model and modify the material parameters, then run the analysis."
+  ],
+  "apps": [],
+  "mcpServers": [
+    "osis.mcp.json"
+  ],
+  "skills": [
+    "skills/osis-auto-testconformance/SKILL.md",
+    "skills/osis-bridge-cantilever-box/SKILL.md",
+    "skills/osis-bridge-conventional-box/SKILL.md",
+    "skills/osis-bridge-hollow-slab/SKILL.md",
+    "skills/osis-bridge-precast-small-box/SKILL.md",
+    "skills/osis-bridge-precast-t-girder/SKILL.md",
+    "skills/osis-bridge-rigid-frame-box/SKILL.md",
+    "skills/osis-calcbook/SKILL.md",
+    "skills/osis-check/SKILL.md",
+    "skills/osis-customize-osisai/SKILL.md",
+    "skills/osis-edit-hmid/SKILL.md",
+    "skills/osis-engine/SKILL.md",
+    "skills/osis-module-analysis/SKILL.md",
+    "skills/osis-module-boundary/SKILL.md",
+    "skills/osis-module-control/SKILL.md",
+    "skills/osis-module-element/SKILL.md",
+    "skills/osis-module-loadcase/SKILL.md",
+    "skills/osis-module-material/SKILL.md",
+    "skills/osis-module-node/SKILL.md",
+    "skills/osis-module-rebar/SKILL.md",
+    "skills/osis-module-section/SKILL.md",
+    "skills/osis-module-stage/SKILL.md",
+    "skills/osis-module-tendon/SKILL.md",
+    "skills/osis-python-helper/SKILL.md",
+    "skills/osis-screenshot-check/SKILL.md"
+  ]
+}

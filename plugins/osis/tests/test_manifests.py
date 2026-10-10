@@ -112,6 +112,57 @@ def test_both_marketplaces_share_same_plugin():
     assert {p["name"] for p in codex["plugins"]} == {p["name"] for p in claude["plugins"]}
 
 
+# ---------------------------------------------------------------- 其他宿主
+# ZCode / WorkBuddy(CodeBuddy)直接读 Claude 那套,不另写。
+
+
+def assert_same_servers(servers: dict) -> None:
+    """各宿主只差格式,server 集合与启动命令/env 必须与 Claude 那份一致。"""
+    ref = load(".mcp.json")["mcpServers"]
+    assert servers.keys() == ref.keys()
+    for name in ref:
+        for key in ("command", "args", "env"):
+            assert servers[name].get(key) == ref[name].get(key), f"{name}.{key} 与 .mcp.json 不一致"
+
+
+def test_kimi_manifest():
+    m = repo_load("kimi.plugin.json")  # 从仓库根安装,路径相对仓库根
+    assert m["name"] == "osis"
+    assert (REPO_ROOT / m["skills"][2:]).resolve() == (PLUGIN_ROOT / "skills").resolve()
+    assert_same_servers(m["mcpServers"])
+
+
+def test_minimax_manifest():
+    m = load(".minimax-plugin/plugin.json")
+    assert m["schemaVersion"] == 1 and m["name"] == "osis"
+    assert (PLUGIN_ROOT / m["icon"]).is_file()
+    dirs = sorted(p.name for p in (PLUGIN_ROOT / "skills").iterdir() if p.is_dir())
+    assert m["skills"] == [f"skills/{d}/SKILL.md" for d in dirs], "增删 skill 后同步 .minimax-plugin/plugin.json"
+    assert len(m["mcpServers"]) == 1
+    c = load(m["mcpServers"][0])
+    assert c["schemaVersion"] == 1
+    assert_same_servers(c["mcpServers"])
+
+
+def test_qoder_manifest_and_marketplace():
+    m = load(".qoder-plugin/plugin.json")
+    assert m["name"] == "osis"
+    assert_same_servers(m["mcpServers"])
+    mk = repo_load(".qoder-plugin/marketplace.json")
+    assert mk == {**repo_load(".claude-plugin/marketplace.json"), "metadata": mk["metadata"]}
+
+
+def test_versions_agree():
+    versions = {
+        "plugin.json": load("plugin.json")["version"],
+        ".claude-plugin": load(".claude-plugin/plugin.json")["version"],
+        ".qoder-plugin": load(".qoder-plugin/plugin.json")["version"],
+        ".minimax-plugin": load(".minimax-plugin/plugin.json")["version"],
+        "kimi.plugin.json": repo_load("kimi.plugin.json")["version"],
+    }
+    assert len(set(versions.values())) == 1, f"版本号不一致: {versions}"
+
+
 # ---------------------------------------------------------------- MCP 配置一致 §14
 
 
@@ -119,12 +170,9 @@ def test_mcp_servers_agree():
     """两侧 MCP 只差格式(type 写法),server 集合与 stdio 启动方式必须一致。"""
     a, b = load("mcp.json")["mcpServers"], load(".mcp.json")["mcpServers"]
     assert a.keys() == b.keys()
-    # 插件根目录占位符两侧写法不同:Codex(Agent Plugins 规范)${PLUGIN_ROOT},Claude ${CLAUDE_PLUGIN_ROOT}
-    claude_args = lambda s: [x.replace("${CLAUDE_PLUGIN_ROOT}", "${PLUGIN_ROOT}") for x in s.get("args", [])]
     for name in a:
-        for key in ("command", "env"):
+        for key in ("command", "args", "env"):
             assert a[name].get(key) == b[name].get(key), f"{name}.{key} 两侧不一致"
-        assert a[name].get("args", []) == claude_args(b[name]), f"{name}.args 两侧不一致"
 
 
 def test_broker_port_consistent_across_repo():
@@ -196,21 +244,6 @@ def test_broker_endpoint_reachable_if_running():
 
 
 def test_no_api_key_in_plugin_files():
-    """key 不进仓库(公开):由 scripts/weknora_launch.py 从环境变量 / Windows 用户变量读。"""
+    """key 不进仓库(公开):weknora_mcp_server 从环境变量 WEKNORA_API_KEY 读,没有也能启动。"""
     leaked = [p.name for p in PLUGIN_ROOT.rglob("*.json") if re.search(r"sk-[A-Za-z0-9_-]{20,}", p.read_text(encoding="utf-8"))]
     assert not leaked, f"配置里出现了 API key: {leaked}"
-
-
-def test_weknora_launch_key_order(monkeypatch):
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location("weknora_launch", PLUGIN_ROOT / "scripts" / "weknora_launch.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    monkeypatch.setattr(mod, "user_env", lambda name: "from-registry")
-    monkeypatch.setenv("WEKNORA_API_KEY", "from-env")
-    assert mod.api_key() == "from-env"
-    monkeypatch.delenv("WEKNORA_API_KEY")
-    assert mod.api_key() == "from-registry"
-    monkeypatch.setattr(mod, "user_env", lambda name: "")
-    assert mod.api_key() == ""  # 没 key 也能启动

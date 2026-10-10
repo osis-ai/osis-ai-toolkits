@@ -9,7 +9,7 @@
     "weknora": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "${PLUGIN_ROOT}/scripts/weknora_launch.py"],
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "-m", "weknora_mcp_server"],
       "env": {
         "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1"
       }

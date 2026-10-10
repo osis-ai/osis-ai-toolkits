@@ -1,6 +1,6 @@
 # OSIS Plugin
 
-给 Codex 与 Claude Code 用的 OSIS Agent 插件。**同一个 Skill 源、同一套 MCP server**，两侧只差 manifest 与 MCP 配置格式。
+给 Codex、Claude Code 等 Agent 用的 OSIS 插件。**同一个 Skill 源、同一套 MCP server**，各宿主只差 manifest 与 MCP 配置格式。
 
 ## 组成
 
@@ -9,16 +9,20 @@
 | `plugin.json` | Codex | 便携 manifest（`agent-plugins.org` schema） |
 | `mcp.json` | Codex | MCP 配置 |
 | `.claude-plugin/plugin.json` | Claude Code | manifest（`name` 必填、kebab-case） |
-| `.mcp.json` | Claude Code | MCP 配置 |
-| `skills/` | 两者共用 | 领域 skill 唯一源 |
+| `.mcp.json` | Claude Code（ZCode、WorkBuddy 同样读这套） | MCP 配置 |
+| `.qoder-plugin/plugin.json` | Qoder | manifest，MCP 内联 |
+| `.minimax-plugin/plugin.json` | MiniMax Code | manifest，skills 逐个列出 |
+| `osis.mcp.json` | MiniMax Code | MCP 配置 |
+| `../../kimi.plugin.json` | Kimi Code | manifest（在仓库根，从仓库根安装），MCP 内联 |
+| `skills/` | 全部共用 | 领域 skill 唯一源 |
 | `tests/` | — | manifest 与 Skill 校验 |
 
-两侧配置同两个 MCP server：
+各宿主配置同两个 MCP server：
 
 | server | 类型 | 说明 |
 |---|---|---|
 | `osis` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m osis_broker --stdio` | OSIS Agent Broker。本机 `127.0.0.1:18080` 没有 Broker 就后台拉起一个(独立进程,OSIS 与其他会话共用,会话结束不退出),再把 MCP 消息转发给它;不用手动启动 Broker |
-| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P <插件根>/scripts/weknora_launch.py`(用 OSIS 环境的 Python;`-P` 不把 cwd(宿主的项目目录)加进 sys.path,防止项目里的同名 .py 盖掉依赖;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量;插件根 Codex 写 `${PLUGIN_ROOT}`、Claude 写 `${CLAUDE_PLUGIN_ROOT}`) | 桥梁模板/知识库检索。key 不进配置:launcher 先读环境变量 `WEKNORA_API_KEY`,没有再读 Windows 用户变量(`setx` 写的,Codex 不把用户环境变量传给 MCP 子进程);都没有也照常启动 |
+| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m weknora_mcp_server`(用 OSIS 环境的 Python;`-P` 不把 cwd(宿主的项目目录)加进 sys.path,防止项目里的同名 .py 盖掉依赖;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量) | 桥梁模板/知识库检索。key 不进配置:从环境变量 `WEKNORA_API_KEY` 读,没有也照常启动,只是知识库工具鉴权失败 |
 
 ## Skill
 
@@ -47,9 +51,9 @@ raw_http_request(...)                      高级兼容入口,非日常工作流
 
 ## 故障排查
 
-- **MCP 连不上** → 看 `~/.osisai/logs/stdio.log` 与 `broker.log`;常见原因是 `~/.osisai/.venv` 里没装 osis-broker 或版本低于 1.0.12。不要去猜 OSIS 端口。
+- **MCP 连不上** → 看 `~/.osisai/logs/stdio.log` 与 `broker.log`;常见原因是还没打开过 OSIS(`~/.osisai/.venv` 未装好),或里面的 osis-broker 低于 1.0.12。不要去猜 OSIS 端口。
 - **`list_instances` 为空** → OSIS 没打开,或 OSIS 还没向 Broker 发心跳。
-- **改 `mcp.json` / `.mcp.json`** → 两边必须同步。`tests/test_manifests.py` 会拦下不一致。
+- **改 MCP 配置** → 所有宿主的配置（见上表）必须同步。`tests/test_manifests.py` 会拦下不一致。
 
 ## 测试
 
