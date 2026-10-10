@@ -37,12 +37,7 @@ marketplace 名称（`osis-ai-toolkits`）与 plugin slug（`osis`）发布后�
 ## 发布新版本
 
 1. 两处版本号一起改：`plugins/osis/plugin.json`、`plugins/osis/.claude-plugin/plugin.json`。**版本号不变，Claude Code / Codex 都不认为有更新。**
-2. 跑测试（见下），提交并 push —— 在线用户据此更新。
-3. 给离线用户打 zip（只含已提交内容）：
-
-   ```bat
-   git archive --format=zip --prefix=osis-ai-toolkits/ -o dist\osis-ai-toolkits-<版本>.zip HEAD
-   ```
+2. 跑测试（见下），提交并 push —— 在线用户据此更新；离线用户下载的 main 分支 zip（README 里的直链）也随之更新，不用另外打包。
 
 更新行为实测（2026-10）：
 
