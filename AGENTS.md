@@ -2,7 +2,7 @@
 
 用户文档见 `README.md`；本文件写给维护本仓库的人和 Agent。
 
-一个 Git 仓库同时服务 **Codex** 和 **Claude Code**：共享同一份 Skill、同一个 MCP endpoint、同一套测试，只针对不同宿主维护很薄的 manifest 适配。插件只连本机 `http://127.0.0.1:18080/mcp`（服务端在 `osis-broker` 仓库，通信契约见 `osis-broker/docs/contract.md`）。
+一个 Git 仓库同时服务 **Codex** 和 **Claude Code**：共享同一份 Skill、同一套 MCP server、同一套测试，只针对不同宿主维护很薄的 manifest 适配。`osis` MCP 是 stdio：`python -m osis_broker --stdio` 自动拉起/复用本机 `127.0.0.1:18080` 上的 Broker 并转发（服务端在 `osis-broker` 仓库，通信契约见 `osis-broker/docs/contract.md`）。
 
 ## 仓库结构
 

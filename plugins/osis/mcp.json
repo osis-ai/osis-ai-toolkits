@@ -2,8 +2,9 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "osis": {
-      "type": "streamable-http",
-      "url": "http://127.0.0.1:18080/mcp"
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-m", "osis_broker", "--stdio"]
     },
     "weknora": {
       "type": "stdio",

@@ -29,6 +29,14 @@ def repo_load(rel: str) -> dict:
 KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
+def assert_osis_stdio(srv: dict) -> None:
+    """osis 走 stdio:Broker 的 --stdio 自动拉起/复用 18080 上的 Broker 再转发。
+    用 OSIS 环境的 Python;cmd /c 负责展开 %USERPROFILE%(Codex 不展开 command 里的变量)。"""
+    assert srv["type"] == "stdio"
+    assert srv["command"] == "cmd"
+    assert srv["args"] == ["/c", r"%USERPROFILE%\.osisai\.venv\Scripts\python.exe", "-m", "osis_broker", "--stdio"]
+
+
 # ---------------------------------------------------------------- Codex 侧 §16
 
 
@@ -44,9 +52,7 @@ def test_codex_portable_manifest():
 def test_codex_mcp_config():
     c = load("mcp.json")
     assert c["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
-    srv = c["mcpServers"]["osis"]
-    assert srv["type"] == "streamable-http"
-    assert srv["url"] == f"http://127.0.0.1:{BROKER_PORT}{MCP_PATH}"
+    assert_osis_stdio(c["mcpServers"]["osis"])
 
 
 def test_codex_marketplace():
@@ -76,10 +82,7 @@ def test_claude_manifest():
 
 def test_claude_mcp_config():
     c = load(".mcp.json")
-    srv = c["mcpServers"]["osis"]
-    # Claude Code 中 url 必须显式带 type,否则被当成 stdio server
-    assert srv["type"] in ("http", "streamable-http")
-    assert srv["url"] == f"http://127.0.0.1:{BROKER_PORT}{MCP_PATH}"
+    assert_osis_stdio(c["mcpServers"]["osis"])
 
 
 def test_claude_marketplace():
@@ -103,12 +106,6 @@ def test_both_marketplaces_share_same_plugin():
 
 
 # ---------------------------------------------------------------- MCP 配置一致 §14
-
-
-def test_mcp_endpoints_agree():
-    a = load("mcp.json")["mcpServers"]["osis"]["url"]
-    b = load(".mcp.json")["mcpServers"]["osis"]["url"]
-    assert a == b, "Codex 与 Claude 必须连同一个 Broker endpoint"
 
 
 def test_mcp_servers_agree():
