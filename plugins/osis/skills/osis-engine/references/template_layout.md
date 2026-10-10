@@ -1,6 +1,6 @@
 # 模板目录布局
 
-所有桥型同一套目录。每份在该桥型 SKILL 的 `references/templates/<目录名>/`(平铺,没有 `<桥型>/<跨径>` 两级)。完整建模先 WeKnora `download_bridge_template` 落到当前工程 `py/`;WeKnora 失效再 `seedtpl` 从本目录复制。
+所有桥型同一套目录。每份在该桥型 SKILL 的 `references/templates/<目录名>/`(平铺,没有 `<桥型>/<跨径>` 两级)。完整建模先 `seedtpl` 从本目录复制到当前工程 `py/`;本地没有可用模板再 WeKnora `download_bridge_template`。
 
 ```
 <template>/

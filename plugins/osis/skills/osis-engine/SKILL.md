@@ -20,7 +20,7 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 | 任何任务的总入口(必先加载) | `osis-engine` |
 | 桥型方案(由本文件路由) | `osis-bridge-{bridge_type}` |
 | 写 `_1`..`_10` 任意模块 | 对应 `osis-module-{module_type}` |
-| 模板匹配 | 本文件 §模板优先策略(WeKnora 优先,失效再 `seedtpl`),各 bridge `references/templates/` |
+| 模板匹配 | 本文件 §模板优先策略(`seedtpl` 优先,本地未命中再 WeKnora),各 bridge `references/templates/` |
 | 荷载组合与规范验算 | `osis-check` |
 | 生成计算书 | `osis-calcbook` |
 | pyosis 用法要点与坑(签名用 MCP `api_glob`/`api_grep`/`api_read` 查) | `osis-python-helper` |
@@ -106,22 +106,11 @@ _1 控制 → _2 几何属性 → _3 材料 → _4 截面 → _5 节点
 
 ## 模板优先策略(完整建模)
 
-路由桥型后**先 WeKnora 下载,失败再自己跑 `seedtpl.py`**。落盘目标一律当前工程 `get_directory()/py/`(`prep/` + 同级 `项目画像.md`)。`py/prep` 已有模型时先读画像说明现有桥型,问是否覆盖;未确认不要下、不要 `seedtpl --force`。
+路由桥型后**先用 SKILL 自带模板(`seedtpl.py`),本地没有可用模板再查 WeKnora**。落盘目标一律当前工程 `get_directory()/py/`(`prep/` + 同级 `项目画像.md`)。`py/prep` 已有模型时先读画像说明现有桥型,问是否覆盖;未确认不要 `seedtpl --force`、不要下载。
 
-### 1. WeKnora(优先)
+### 1. seedtpl(优先)
 
-工具名可能带宿主前缀(如 `weknora_`、`mcp__weknora__`),按后缀认。
-
-1. `list_knowledge_bases` → 选桥梁模板/案例库(条目路径含 `02-案例库`),记下 `kb_id`。不要把 SKILL 列表或 pyosis 库当成模板库。
-2. `bridge_search_templates`(kb_id, query=用户原话或「桥型 + 跨径」)
-3. 命中案例后 `download_bridge_template`(kb_id, case_query=案例目录名, dest_dir=`get_directory()/py/`)。该工具把 `prep-md/*.py.md` 拆成真正的 `.py`,文件直接写在当前工程 `py/` 下。
-4. 读 `py/项目画像.md` 核对跨径/材料,再按下表匹配度动作。
-
-下列任一情况视为 WeKnora 失效,立刻改走 §2,不要空等、不要手搓:`MCP 不可用或超时` / `list_knowledge_bases` 没有模板库 / 搜索无命中 / 下载报错 / `written_files` 空。
-
-### 2. seedtpl(降级)
-
-只在 WeKnora 失效时,由主会话直接在终端跑本 SKILL 的脚本(`<skill_dir>` = 本 SKILL.md 所在目录):
+由主会话直接在终端跑本 SKILL 的脚本(`<skill_dir>` = 本 SKILL.md 所在目录):
 
 ```bash
 python "<skill_dir>/scripts/seedtpl.py" --spec "<用户原话>"
@@ -137,6 +126,19 @@ runpy.run_path(script, run_name="__main__")
 ```
 
 stdout 的 `共 N 个模板: [...]` 即全量名单;**未报全量不得宣布命中/近邻**。N 对不上或名单像截断 → 再跑,或 `ls` 当前桥型 `references/templates/`。只查本桥型平铺目录(没有 `<桥型>/<跨径>` 两级)。
+
+全量名单里没有精确或近似命中时,改走 §2。
+
+### 2. WeKnora(本地未命中时)
+
+工具名可能带宿主前缀(如 `weknora_`、`mcp__weknora__`),按后缀认。
+
+1. `list_knowledge_bases` → 选桥梁模板/案例库(条目路径含 `02-案例库`),记下 `kb_id`。不要把 SKILL 列表或 pyosis 库当成模板库。
+2. `bridge_search_templates`(kb_id, query=用户原话或「桥型 + 跨径」)
+3. 命中案例后 `download_bridge_template`(kb_id, case_query=案例目录名, dest_dir=`get_directory()/py/`)。该工具把 `prep-md/*.py.md` 拆成真正的 `.py`,文件直接写在当前工程 `py/` 下。
+4. 读 `py/项目画像.md` 核对跨径/材料,再按下表匹配度动作。
+
+`MCP 不可用或超时` / 没有模板库 / 搜索无命中 / 下载报错 / `written_files` 空 → 不要空等,按下表「未命中」处理。
 
 悬浇三跨只改跨径(近似命中、节段对数相同):不要手改 `_5`/`_2`,按 `osis-bridge-cantilever-box` 跑它的 `spanremap`,看 stdout 校核。失败则换同构近邻。
 

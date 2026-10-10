@@ -1,6 +1,6 @@
 {
   "name": "osis",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "OSIS Agent plugin for Kimi Code: starts (or reuses) the local OSIS Agent Broker over stdio and ships the OSIS modeling skills.",
   "license": "MIT",
   "homepage": "https://github.com/osis-ai/osis-ai-toolkits",

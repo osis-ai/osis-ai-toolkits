@@ -116,11 +116,11 @@ codex plugin marketplace remove osis-ai-toolkits      :: 可选
 
 ## 可选：知识库
 
-桥梁模板检索使用 WeKnora 知识库。向管理员要访问 key，设成 Windows 环境变量 `WEKNORA_API_KEY`：
+插件自带桥梁模板；自带模板里找不到时，会再查 WeKnora 知识库。向管理员要访问 key，设成 Windows 环境变量 `WEKNORA_API_KEY`：
 
 - 开始菜单搜「编辑系统环境变量」→ 环境变量 → 新建，变量名 `WEKNORA_API_KEY`，值填 key；
 - 或在命令行执行 `setx WEKNORA_API_KEY 你的key`。
 
 设好后**完全退出并重开** Agent 应用（Claude Code、Codex、ZCode 等），新值才会生效。
 
-不设置插件也能正常打开，只是知识库查不了，会改用插件自带的本地模板。
+不设置插件也能正常打开，只是知识库查不了。
