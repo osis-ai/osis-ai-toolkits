@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "osis",
-  "version": "0.2.18",
-  "description": "OSIS Agent plugin for Codex and Claude Code. Starts (or reuses) the local OSIS Agent Broker over stdio, so agents never need to know real OSIS ports.",
+  "version": "0.2.19",
+  "description": "OSIS 桥梁设计分析软件的 AI 插件：同时连接并控制本机多个 OSIS 实例，按真实 Python API 建模、改模型、跑计算，内置常用桥型模板与建模技能，全程在本机运行。AI plugin for OSIS bridge design & analysis software: connect to and control multiple local OSIS instances, build and edit models and run analyses with the real Python API, with built-in bridge templates and modeling skills. Runs entirely on your machine.",
   "author": {
     "name": "OSIS AI Team"
   },
@@ -20,17 +20,17 @@
     "com.openai": {
       "interface": {
         "displayName": "OSIS",
-        "shortDescription": "Drive the local OSIS modeling app from Codex",
-        "longDescription": "Select an OSIS instance, look up the real OSIS Python API and run Python against the open model. All traffic stays on 127.0.0.1 through the OSIS Agent Broker.",
+        "shortDescription": "用 AI 操作 OSIS 桥梁设计分析软件 | Drive OSIS bridge design & analysis software with AI",
+        "longDescription": "连接本机已打开的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software running on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
         "developerName": "OSIS AI Team",
-        "websiteURL": "https://github.com/osis-ai/osis-ai-toolkits",
+        "websiteURL": "https://www.osisbim.com/osis/home/",
         "category": "Productivity",
         "composerIcon": "./assets/icon.png",
         "logo": "./assets/icon.png",
         "capabilities": ["Read", "Write"],
         "defaultPrompt": [
-          "List the OSIS models I have open.",
-          "Check the current model and modify the material parameters, then run the analysis."
+          "列出当前打开的 OSIS 模型 (List my open OSIS models)",
+          "检查当前模型，修改材料参数后进行求解 (Check the model, edit materials, then run the solve)"
         ]
       }
     }

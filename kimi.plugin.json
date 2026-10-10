@@ -1,15 +1,15 @@
 {
   "name": "osis",
-  "version": "0.2.18",
-  "description": "OSIS Agent plugin for Kimi Code: starts (or reuses) the local OSIS Agent Broker over stdio and ships the OSIS modeling skills.",
+  "version": "0.2.19",
+  "description": "OSIS 桥梁设计分析软件的 AI 插件：同时连接并控制本机多个 OSIS 实例，按真实 Python API 建模、改模型、跑计算，内置常用桥型模板与建模技能，全程在本机运行。AI plugin for OSIS bridge design & analysis software: connect to and control multiple local OSIS instances, build and edit models and run analyses with the real Python API, with built-in bridge templates and modeling skills. Runs entirely on your machine.",
   "license": "MIT",
   "homepage": "https://github.com/osis-ai/osis-ai-toolkits",
   "interface": {
     "displayName": "OSIS",
-    "shortDescription": "Drive the local OSIS modeling app",
-    "longDescription": "Select an OSIS instance, look up the real OSIS Python API and run Python against the open model. All traffic stays on 127.0.0.1 through the OSIS Agent Broker.",
+    "shortDescription": "用 AI 操作 OSIS 桥梁设计分析软件 | Drive OSIS bridge design & analysis software with AI",
+    "longDescription": "连接本机已打开的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software running on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
     "developerName": "OSIS AI Team",
-    "websiteURL": "https://github.com/osis-ai/osis-ai-toolkits"
+    "websiteURL": "https://www.osisbim.com/osis/home/"
   },
   "skills": "./plugins/osis/skills/",
   "mcpServers": {

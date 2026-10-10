@@ -1,6 +1,6 @@
 # OSIS AI Toolkits
 
-让 **Codex**、**Claude Code** 等 Agent 直接操作 OSIS 桥梁模型的插件。
+让 **Codex**、**Claude Code** 等 Agent 直接操作 [OSIS 桥梁设计分析软件](https://www.osisbim.com/osis/home/) 的插件。
 
 安装后，你可以直接在 Codex / Claude Code 里说：
 

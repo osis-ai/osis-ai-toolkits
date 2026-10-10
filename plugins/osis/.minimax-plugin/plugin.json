@@ -1,15 +1,15 @@
 {
   "schemaVersion": 1,
   "name": "osis",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "displayName": "OSIS",
-  "description": "Drive the local OSIS bridge modeling app: select an instance, look up the real OSIS Python API and run Python against the open model through the local OSIS Agent Broker.",
+  "description": "连接本机已打开的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software running on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
   "author": "OSIS AI Team",
   "icon": "assets/icon.png",
   "category": "Productivity",
   "exampleQueries": [
-    "List the OSIS models I have open.",
-    "Check the current model and modify the material parameters, then run the analysis."
+    "列出当前打开的 OSIS 模型 (List my open OSIS models)",
+    "检查当前模型，修改材料参数后运行计算 (Check the model, edit materials, then run the analysis)"
   ],
   "apps": [],
   "mcpServers": [
