@@ -31,10 +31,11 @@ KEBAB = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 def assert_osis_stdio(srv: dict) -> None:
     """osis 走 stdio:Broker 的 --stdio 自动拉起/复用 18080 上的 Broker 再转发。
-    用 OSIS 环境的 Python;cmd /c 负责展开 %USERPROFILE%(Codex 不展开 command 里的变量)。"""
+    用 OSIS 环境的 Python;cmd /c 负责展开 %USERPROFILE%(Codex 不展开 command 里的变量);
+    -P 防止宿主项目目录(cwd)里的同名 .py 盖掉依赖。"""
     assert srv["type"] == "stdio"
     assert srv["command"] == "cmd"
-    assert srv["args"] == ["/c", r"%USERPROFILE%\.osisai\.venv\Scripts\python.exe", "-m", "osis_broker", "--stdio"]
+    assert srv["args"] == ["/c", r"%USERPROFILE%\.osisai\.venv\Scripts\python.exe", "-P", "-m", "osis_broker", "--stdio"]
 
 
 # ---------------------------------------------------------------- Codex 侧 §16

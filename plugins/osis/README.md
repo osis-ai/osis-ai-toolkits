@@ -17,8 +17,8 @@
 
 | server | 类型 | 说明 |
 |---|---|---|
-| `osis` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -m osis_broker --stdio` | OSIS Agent Broker。本机 `127.0.0.1:18080` 没有 Broker 就后台拉起一个(独立进程,OSIS 与其他会话共用,会话结束不退出),再把 MCP 消息转发给它;不用手动启动 Broker |
-| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe <插件根>/scripts/weknora_launch.py`(用 OSIS 环境的 Python;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量;插件根 Codex 写 `${PLUGIN_ROOT}`、Claude 写 `${CLAUDE_PLUGIN_ROOT}`) | 桥梁模板/知识库检索。key 不进配置:launcher 先读环境变量 `WEKNORA_API_KEY`,没有再读 Windows 用户变量(`setx` 写的,Codex 不把用户环境变量传给 MCP 子进程);都没有也照常启动 |
+| `osis` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m osis_broker --stdio` | OSIS Agent Broker。本机 `127.0.0.1:18080` 没有 Broker 就后台拉起一个(独立进程,OSIS 与其他会话共用,会话结束不退出),再把 MCP 消息转发给它;不用手动启动 Broker |
+| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P <插件根>/scripts/weknora_launch.py`(用 OSIS 环境的 Python;`-P` 不把 cwd(宿主的项目目录)加进 sys.path,防止项目里的同名 .py 盖掉依赖;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量;插件根 Codex 写 `${PLUGIN_ROOT}`、Claude 写 `${CLAUDE_PLUGIN_ROOT}`) | 桥梁模板/知识库检索。key 不进配置:launcher 先读环境变量 `WEKNORA_API_KEY`,没有再读 Windows 用户变量(`setx` 写的,Codex 不把用户环境变量传给 MCP 子进程);都没有也照常启动 |
 
 ## Skill
 
@@ -45,14 +45,14 @@ raw_http_request(...)                      高级兼容入口,非日常工作流
 ```
 
 怎么用这些工具（选实例、查 API、写回、失败处理等规矩）由 Broker 在 MCP server instructions 里下发，
-各工具的参数说明在工具描述里；插件不再单独带 `osis` skill。需要 osis-broker ≥ 1.0.11(`--stdio`)。
+各工具的参数说明在工具描述里；插件不再单独带 `osis` skill。需要 osis-broker ≥ 1.0.12(`--stdio`)。
 
 不把几百个 OSIS API 做成 Tool —— 复杂操作由 Agent 写 Python 走 `execute_python`。
 `api_*` 的内容来自 OSIS 执行环境里 `pyosis` 的真实签名与 docstring，与已安装版本对应。
 
 ## 故障排查
 
-- **MCP 连不上** → 看 `~/.osisai/logs/stdio.log` 与 `broker.log`;常见原因是 `~/.osisai/.venv` 里没装 osis-broker 或版本低于 1.0.11。不要去猜 OSIS 端口。
+- **MCP 连不上** → 看 `~/.osisai/logs/stdio.log` 与 `broker.log`;常见原因是 `~/.osisai/.venv` 里没装 osis-broker 或版本低于 1.0.12。不要去猜 OSIS 端口。
 - **`list_instances` 为空** → OSIS 没打开,或 OSIS 还没向 Broker 发心跳。
 - **改 `mcp.json` / `.mcp.json`** → 两边必须同步。`tests/test_manifests.py` 会拦下不一致。
 

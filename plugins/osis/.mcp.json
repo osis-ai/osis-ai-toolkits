@@ -3,12 +3,12 @@
     "osis": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-m", "osis_broker", "--stdio"]
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "-m", "osis_broker", "--stdio"]
     },
     "weknora": {
       "type": "stdio",
       "command": "cmd",
-      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "${CLAUDE_PLUGIN_ROOT}/scripts/weknora_launch.py"],
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "${CLAUDE_PLUGIN_ROOT}/scripts/weknora_launch.py"],
       "env": {
         "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1"
       }
