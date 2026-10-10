@@ -168,46 +168,10 @@ def test_expected_layout():
         ".mcp.json",
         ".claude-plugin/plugin.json",
         "README.md",
-        "skills/.synced-from",
     ):
         assert (PLUGIN_ROOT / rel).exists(), f"缺少 {rel}"
     for rel in (".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"):
         assert (REPO_ROOT / rel).exists(), f"缺少 {rel}"
-
-
-# ---------------------------------------------------------------- 领域 skill 单向同步
-
-
-SRC_SKILLS = REPO_ROOT.parent / "osis-skill-enhance" / ".agents" / "skills"
-
-
-def _tree(root: Path) -> dict[str, bytes]:
-    # 统一换行:两个仓库的 autocrlf / .gitattributes 可能不同
-    return {
-        p.relative_to(root).as_posix(): p.read_bytes().replace(b"\r\n", b"\n")
-        for p in root.rglob("*")
-        if p.is_file() and "__pycache__" not in p.parts
-    }
-
-
-def test_synced_skills_recorded():
-    stamp = (PLUGIN_ROOT / "skills" / ".synced-from").read_text(encoding="utf-8")
-    names = stamp.split("skills:", 1)[1].split()
-    assert "osis" not in names
-    for n in names:
-        assert (PLUGIN_ROOT / "skills" / n / "SKILL.md").is_file(), n
-
-
-def test_synced_skills_match_source():
-    """插件侧不许手改领域 skill:改源仓库再跑 scripts/sync_skills.py。"""
-    if not SRC_SKILLS.is_dir():
-        pytest.skip("未检出 osis-skill-enhance,跳过同步一致性检查")
-    stamp = (PLUGIN_ROOT / "skills" / ".synced-from").read_text(encoding="utf-8")
-    stale = []
-    for n in stamp.split("skills:", 1)[1].split():
-        if _tree(SRC_SKILLS / n) != _tree(PLUGIN_ROOT / "skills" / n):
-            stale.append(n)
-    assert not stale, f"与源仓库不一致(先跑 scripts/sync_skills.py): {stale}"
 
 
 # ---------------------------------------------------------------- 可选:连通性

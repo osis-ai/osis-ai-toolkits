@@ -10,7 +10,7 @@
 | `mcp.json` | Codex | MCP 配置 |
 | `.claude-plugin/plugin.json` | Claude Code | manifest（`name` 必填、kebab-case） |
 | `.mcp.json` | Claude Code | MCP 配置 |
-| `skills/` | 两者共用 | 唯一 Skill 源 |
+| `skills/` | 两者共用 | 领域 skill 唯一源 |
 | `tests/` | — | manifest 与 Skill 校验 |
 
 两侧配置同两个 MCP server：
@@ -22,14 +22,9 @@
 
 ## Skill
 
-- 全部是领域 skill（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等），**从 `osis-skill-enhance/.agents/skills` 原样同步，不要在本仓库手改**：
-
-```bat
-python scripts\sync_skills.py          :: 默认源 ..\osis-skill-enhance\.agents\skills
-```
-
-同步结果与源 commit 记在 `skills/.synced-from`；`tests/test_manifests.py` 会拦下与源不一致的手改。
-领域 skill 的宿主中立写法规范见源仓库 `SKILL编写规则.md §11`。
+- 全部是领域 skill（`osis-engine`、`osis-bridge-*`、`osis-module-*` 等），**本目录就是唯一源，直接在这里改**。
+- `osis-skill-enhance`（训练 / 评测工作台）的 `.agents/skills` 是指向本目录的本地联接，那边读写的也是这一份。
+- 宿主中立写法规范见 `osis-skill-enhance/SKILL编写规则.md §11`。
 
 ## MCP 工具
 

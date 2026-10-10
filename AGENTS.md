@@ -15,34 +15,30 @@ osis-ai-toolkits/
     ├── mcp.json               Codex MCP 配置(osis + weknora)
     ├── .claude-plugin/plugin.json  Claude Code manifest
     ├── .mcp.json              Claude Code MCP 配置(同上,格式不同)
-    ├── skills/                Codex / Claude 共用
-    │   ├── osis-engine/       ┐
-    │   ├── osis-bridge-*/     │ 领域 skill:从 osis-skill-enhance
-    │   ├── osis-module-*/     │ 原样同步(scripts/sync_skills.py),
-    │   └── ...                ┘ 不要在本仓库手改
+    ├── skills/                领域 skill 唯一源:Codex / Claude 插件共用,
+    │   ├── osis-engine/       ┐ osis-skill-enhance 的 .agents/skills
+    │   ├── osis-bridge-*/     │ 是指向这里的本地联接
+    │   ├── osis-module-*/     │
+    │   └── ...                ┘
     ├── README.md
-    └── tests/                 manifest、同步一致性校验
-scripts/sync_skills.py         同步领域 skill
+    └── tests/                 manifest 校验
 ```
 
 marketplace 名称（`osis-ai-toolkits`）与 plugin slug（`osis`）发布后保持稳定，不要改。
 
 ## 更新领域 skill
 
-领域 skill 的唯一源是 `osis-skill-enhance/.agents/skills`（与 OSIS-AI 共用）。在那边改完并提交后：
+领域 skill 的唯一源就是本仓库的 `plugins/osis/skills/`，直接在这里改、在这里提交。
 
-```bat
-python scripts\sync_skills.py
-```
-
-源仓库未提交时 `.synced-from` 会标 `(dirty)`。
+`osis-skill-enhance`（训练 / 评测工作台）不再存 skill：它的 `.agents/skills` 是指向这里的本地目录联接（不进 git），
+两仓库须同级检出，首次检出后在那边跑一次 `python scripts/link_skills.py`。那边的训练、评测、`sync_model_conformance.py`
+读写的都是本仓库这份，改动记得回到本仓库提交。
 
 ## 发布新版本
 
-1. 同步 skill（见上）。
-2. 两处版本号一起改：`plugins/osis/plugin.json`、`plugins/osis/.claude-plugin/plugin.json`。**版本号不变，Claude Code / Codex 都不认为有更新。**
-3. 跑测试（见下），提交并 push —— 在线用户据此更新。
-4. 给离线用户打 zip（只含已提交内容）：
+1. 两处版本号一起改：`plugins/osis/plugin.json`、`plugins/osis/.claude-plugin/plugin.json`。**版本号不变，Claude Code / Codex 都不认为有更新。**
+2. 跑测试（见下），提交并 push —— 在线用户据此更新。
+3. 给离线用户打 zip（只含已提交内容）：
 
    ```bat
    git archive --format=zip --prefix=osis-ai-toolkits/ -o dist\osis-ai-toolkits-<版本>.zip HEAD
@@ -60,13 +56,13 @@ python scripts\sync_skills.py
 %USERPROFILE%\.osisai\.venv\Scripts\python.exe -m pytest plugins/osis/tests -q
 ```
 
-覆盖：两侧 marketplace 结构、manifest 字段、两侧 MCP 配置一致（stdio 启动命令）、端口全仓一致性、Skill 完整性、与源仓库同步一致；若本机服务正在运行，额外验证 MCP 可连。
+覆盖：两侧 marketplace 结构、manifest 字段、两侧 MCP 配置一致（stdio 启动命令）、端口全仓一致性、Skill 完整性；若本机服务正在运行，额外验证 MCP 可连。
 
 ## 相关仓库
 
 | 仓库 | 职责 |
 |---|---|
 | `osis-ai-toolkits`（本仓库） | MCP 配置、Skill、Codex / Claude 插件 |
-| `osis-skill-enhance` | 领域 skill 唯一源 |
+| `osis-skill-enhance` | skill 训练 / 评测工作台（`.agents/skills` 联接到本仓库） |
 | `osis-broker` | 本机 MCP 服务端：实例注册、代理、MCP Server、API 文档检索、WebUI |
 | `osis-python-runtime` | `runtime-bootstrap`：准备 `~/.osisai/.venv` |
