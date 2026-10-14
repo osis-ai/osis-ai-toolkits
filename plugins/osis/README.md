@@ -41,7 +41,14 @@ api_read(symbol)                           单个 API 全文;歧义列候选
 execute_python(instance_id, code, timeout) 核心:在实例里执行 Python
 execute_apdl(instance_id, script|file)     执行 APDL 命令流(片段或 .sml/.out)
 raw_http_request(...)                      高级兼容入口,非日常工作流
+show_model(instance_id | project)          模型三维预览,返回预览页链接
+get_selection(instance_id | project)       读用户在预览里选中的对象
+open_model_panel(instance_id | project)    在对话旁开预览面板(Codex 等支持 MCP App 的客户端)
 ```
+
+- `instance_id="solver"`:仅求解器模式,不开 OSIS 界面,由 Broker 启动求解器;脚本在 `<项目目录>/py/` 下时打开(没有就新建)该项目,成功后保存。
+- 预览按项目存快照(`<项目目录>/viewer/`),Agent 执行代码后自动刷新;不支持 MCP App 的客户端用内置浏览器或本机浏览器打开链接(或 <http://127.0.0.1:18080/>),内容相同。
+- 用户在预览里点选的对象,Agent 用 `get_selection` 读到类型和编号/名称,用来处理"改我选中的对象"这类请求。
 
 怎么用这些工具（选实例、查 API、写回、失败处理等规矩）由 Broker 在 MCP server instructions 里下发，
 各工具的参数说明在工具描述里；插件不再单独带 `osis` skill。需要 osis-broker ≥ 1.0.12(`--stdio`)。
