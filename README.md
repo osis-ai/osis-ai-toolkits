@@ -34,7 +34,7 @@ codex plugin add osis@osis-ai-toolkits
 
 也可以在 Codex 的 `/plugins` 中安装 **OSIS**。
 
-Codex 桌面版里，左侧栏的「更多」中会出现 **OSIS 模型**，随时打开模型的三维预览；让 Agent 显示模型时，它也会在对话旁打开预览面板，你在面板里点选的对象 Agent 能直接读取（需要 osis-broker ≥ 1.1.0）。
+Codex 桌面版里，左侧栏的「更多」中会出现 **OSIS**，打开后和浏览器访问 Broker 页面一样，可查看实例列表和模型三维预览；让 Agent 显示模型时，它也会在对话旁打开预览面板，你在面板里点选的对象 Agent 能直接读取（需要 osis-broker ≥ 1.1.1）。
 
 ### 其他平台
 
