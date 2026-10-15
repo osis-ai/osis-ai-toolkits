@@ -44,6 +44,7 @@ marketplace 名称（`osis-ai-toolkits`）与 plugin slug（`osis`）发布后�
 ## 发布新版本
 
 1. 五处版本号一起改：`plugins/osis/plugin.json`、`plugins/osis/.claude-plugin/plugin.json`、`plugins/osis/.qoder-plugin/plugin.json`、`plugins/osis/.minimax-plugin/plugin.json`、`kimi.plugin.json`（测试会校验一致）。增删 skill 时同步 `.minimax-plugin/plugin.json` 的 `skills` 列表。**版本号不变，各宿主都不认为有更新。**
+   插件介绍文案分几处重复，改功能介绍时一起改（测试不校验）：短介绍 `description` 在 Claude / Qoder / Kimi manifest 和 Claude、Qoder 两份 marketplace；长介绍在 Codex `longDescription`、Kimi `interface.longDescription`、MiniMax `description`；示例提问在 Codex `defaultPrompt`、MiniMax `exampleQueries`（MiniMax 没有侧边栏，写"在浏览器里打开"）。
 2. 跑测试（见下），提交并 push —— 在线用户据此更新；离线用户下载的 main 分支 zip（README 里的直链）也随之更新，不用另外打包。
 
 更新行为实测（2026-10）：

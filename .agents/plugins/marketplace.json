@@ -2,7 +2,7 @@
   "name": "osis-ai-toolkits",
   "interface": {
     "displayName": "OSIS AI Toolkits",
-    "shortDescription": "OSIS Agent tools for Codex: instance routing, API help and Python execution",
+    "shortDescription": "OSIS 插件：建模、计算与模型三维预览 | OSIS plugin: modeling, analysis and 3D model preview",
     "developerName": "OSIS AI Team",
     "category": "Productivity",
     "websiteURL": "https://github.com/osis-ai/osis-ai-toolkits"

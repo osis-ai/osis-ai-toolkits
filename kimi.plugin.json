@@ -1,13 +1,13 @@
 {
   "name": "osis",
-  "version": "1.0.3",
-  "description": "OSIS 桥梁设计分析软件的 AI 插件：同时连接并控制本机多个 OSIS 实例，按真实 Python API 建模、改模型、跑计算，内置常用桥型模板与建模技能，全程在本机运行。AI plugin for OSIS bridge design & analysis software: connect to and control multiple local OSIS instances, build and edit models and run analyses with the real Python API, with built-in bridge templates and modeling skills. Runs entirely on your machine.",
+  "version": "1.0.4",
+  "description": "OSIS 桥梁设计分析软件的 AI 插件：按真实 Python API 建模、改模型、跑计算，可同时操作本机多个 OSIS，也可不开界面只用求解器；模型三维预览里点选的对象可直接交给 AI 修改；内置常用桥型模板与建模技能，全程在本机运行。AI plugin for OSIS bridge design & analysis software: build and edit models and run analyses with the real Python API, across multiple local OSIS instances or headless with the solver alone; pick objects in the 3D model preview and let the AI edit them; built-in bridge templates and modeling skills. Runs entirely on your machine.",
   "license": "MIT",
   "homepage": "https://github.com/osis-ai/osis-ai-toolkits",
   "interface": {
     "displayName": "OSIS",
     "shortDescription": "用 AI 操作 OSIS 桥梁设计分析软件 | Drive OSIS bridge design & analysis software with AI",
-    "longDescription": "连接本机的 OSIS 桥梁设计分析软件：选择模型、查询 OSIS Python API、在模型中执行 Python，完成建模、修改与计算，数据不出本机。Connects to OSIS bridge design & analysis software on your PC: pick a model, look up the OSIS Python API and run Python in the model to build, edit and analyze bridges. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
+    "longDescription": "操作本机打开的 OSIS 桥梁设计分析软件，或不开界面直接启动 OSIS 求解器：查询 OSIS Python API，执行 Python 与 APDL 命令流，完成建模、修改与计算；在侧边栏或浏览器里查看模型三维预览，点选的对象可直接让 AI 修改。数据不出本机。Works with OSIS bridge design & analysis software open on your PC, or headless with the OSIS solver: look up the OSIS Python API and run Python or APDL to build, edit and analyze bridges; view the 3D model in the sidebar or a browser and let the AI edit the objects you pick. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
     "developerName": "OSIS AI Team",
     "websiteURL": "https://github.com/osis-ai/osis-ai-toolkits"
   },
