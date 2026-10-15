@@ -24,7 +24,7 @@
 
 - OSIS 版本 **> 5.01**
 - 使用时 OSIS 已打开（或求解器已得到授权）
-- OSIS 的 Python 环境 `%USERPROFILE%\.osisai\.venv` 里装有 osis-broker **≥ 1.1.7**（随 OSIS 安装）
+- OSIS 的 Python 环境 `%USERPROFILE%\.osisai\.venv` 里装有 osis-broker **≥ 1.1.8**（随 OSIS 安装）
 
 > **首次使用前，先打开一次 OSIS，等它自动装好 Python 环境（`%USERPROFILE%\.osisai\.venv`）再启用本插件。**
 
