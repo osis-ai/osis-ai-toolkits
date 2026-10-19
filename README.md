@@ -48,6 +48,46 @@ codex plugin add osis@osis-ai-toolkits
 
 也可以在 Codex 的 `/plugins` 中安装 **OSIS**。
 
+**Codex 桌面版（ChatGPT）图形界面安装：**
+
+1. 左侧栏「自定义」→「插件」，右上角「添加」→「添加插件市场」：
+
+   ![打开添加插件市场](docs/images/codex-1-open-marketplace.png)
+
+2. 来源填 `osis-ai/osis-ai-toolkits`，其余留空，点「添加市场」：
+
+   ![添加插件市场](docs/images/codex-2-add-marketplace.png)
+
+3. 切到「个人」，在 **OSIS AI Toolkits** 下安装 **OSIS**：
+
+   ![安装 OSIS](docs/images/codex-3-install-osis.png)
+
+4. 装好后，左侧栏「更多」（**…**）里会出现 **OSIS**，点开就是模型预览页面：
+
+   ![从侧栏打开 OSIS](docs/images/codex-4-open-app.png)
+
+效果：左边是 OSIS 预览页面，右边对话里让 Agent 修改选中截面，改完预览自动刷新：
+
+![Codex 中的 OSIS 页面](docs/images/codex-5-model-preview.png)
+
+### WorkBuddy
+
+1. 左侧栏「专家·技能·连接器」→「技能」→「套件」，点市场列表右侧的 **+**：
+
+   ![打开添加市场](docs/images/workbuddy-1-open-marketplace.png)
+
+2. 市场源填 `osis-ai/osis-ai-toolkits`，提交：
+
+   ![添加市场](docs/images/workbuddy-2-add-marketplace.png)
+
+3. 切到 **osis-ai-toolkits** 市场，点 **osis** 卡片上的 **+** 安装：
+
+   ![安装 osis](docs/images/workbuddy-3-install-osis.png)
+
+装好后新建任务即可使用。让 Agent 打开模型并显示到侧边浏览器的效果：
+
+![WorkBuddy 中的模型预览](docs/images/workbuddy-4-model-preview.png)
+
 ### 其他平台
 
 | 平台 | 安装 |
