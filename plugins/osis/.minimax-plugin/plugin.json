@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "name": "osis",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "displayName": "OSIS",
   "description": "操作本机打开的 OSIS 桥梁设计分析软件，或不开界面直接启动 OSIS 求解器：查询 OSIS Python API，执行 Python 与 APDL 命令流，完成建模、修改与计算；在侧边栏或浏览器里查看模型三维预览，点选的对象可直接让 AI 修改。数据不出本机。Works with OSIS bridge design & analysis software open on your PC, or headless with the OSIS solver: look up the OSIS Python API and run Python or APDL to build, edit and analyze bridges; view the 3D model in the sidebar or a browser and let the AI edit the objects you pick. Everything stays on your machine. OSIS 官网 / Official site: https://www.osisbim.com/osis/home/",
   "author": "OSIS AI Team",
