@@ -1,23 +1,19 @@
-"""构造正确性 CLI:对候选代码跑 model_conformance,出总分 + 分项报告。
+"""构造正确性 CLI:对 OSIS 里的模型跑 model_conformance,出总分 + 分项报告。
 
+评的是模型,不是代码:OSIS 当前实例的模型用 export_apdl 导出求解器命令流,pyosis.transfer 转回模板结构的
+prep 代码(临时目录,不碰工程),再按桥型规则评分。代码怎么写(变量、循环、辅助函数、另一种 API)不影响得分。
 桥型/连续性应由调用方(建模 AI)显式传入;主跨 L 从节点/支座几何提取,不从目录名猜。
 
-用法(以下三选一,推荐第 1 种):
+用法:
 
-    # 1. 标准模式:显式传桥型(推荐)
-    python test_conformance.py \
-        --candidate-dir <path> \
-        --bridge-type cantilever_box \
-        --is-continuous true
+    # 1. 标准模式:评 OSIS 当前模型,显式传桥型(推荐)
+    python test_conformance.py --bridge-type cantilever_box --is-continuous true
 
-    # 2. 只指定候选目录(桥型从目录名猜,猜不中回退 unknown)
-    python test_conformance.py --candidate-dir <path>
-
-    # 3. 自动模式:从 OSIS 当前项目读 py/(桥型从目录名猜)
-    python test_conformance.py
+    # 2. 读代码模式:没有 OSIS 时评一个工程的代码(如模板);代码须与模型一致,结果才可信
+    python test_conformance.py --candidate-dir <py 目录> --bridge-type cantilever_box --is-continuous true
 
 参数:
-    --candidate-dir PATH    候选代码目录(含 *.py)
+    --candidate-dir PATH    读代码模式:工程的 py/ 目录(或模板目录,下有 prep/);缺省评 OSIS 当前模型
     --bridge-type TYPE      cantilever_box / rigid_frame / t_girder /
                             precast_small_box / cast_in_place_box /
                             hollow_slab / unknown
@@ -34,7 +30,9 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 # 把当前目录加进 sys.path,让 model_conformance 能平铺导入
@@ -70,14 +68,18 @@ def _parse_bool(s: str) -> bool:
     raise argparse.ArgumentTypeError(f"无法解析 bool 值: {s!r}")
 
 
-def _detect_project_dir() -> Path | None:
-    """从 OSIS 当前项目读 py/。失败返 None。"""
-    try:
-        from pyosis import OSISEngine
-        d = OSISEngine().project.get_directory()
-        return Path(d) if d else None
-    except Exception:
-        return None
+def _export_model(out: Path) -> str:
+    """OSIS 当前模型 → out/OSIS.out(求解器命令流)→ out/py/prep(pyosis.transfer 转回的代码)。返回工程名。"""
+    from pyosis import OSISEngine
+    from pyosis.transfer.out_to_python import write_prep_outputs
+
+    engine = OSISEngine()
+    prep = out / "py" / "prep"
+    prep.mkdir(parents=True, exist_ok=True)  # OSIS 不自己建目录
+    engine.export_apdl(str(out / "OSIS.out"))
+    write_prep_outputs(out / "OSIS.out", prep)
+    project = engine.project.get_directory()
+    return Path(project).name if project else "OSIS 当前模型"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -86,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--candidate-dir", type=Path, default=None,
-                        help="候选代码目录;缺省从 OSIS 当前项目读 py/")
+                        help="读代码模式:工程 py/ 目录;缺省评 OSIS 当前模型")
     parser.add_argument("--bridge-type", choices=SUPPORTED_BRIDGE_TYPES, default=None,
                         help="桥型;缺省从目录名识别")
     parser.add_argument("--expected-L", type=float, default=None,
@@ -113,24 +115,32 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {t}")
         return 0
 
-    # 1. 定位候选目录
-    candidate_dir = args.candidate_dir
-    name = None
-    if candidate_dir is None:
-        project = _detect_project_dir()
-        if project is None:
-            print("[error] 拿不到 OSIS 项目目录;请 --candidate-dir 显式指定,"
-                  "或先启动 OSIS 桌面端并打开项目", file=sys.stderr)
+    if args.candidate_dir is not None:
+        return _run(args, args.candidate_dir)
+    tmp = Path(tempfile.mkdtemp(prefix="conformance-"))
+    try:
+        try:
+            name = _export_model(tmp)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[error] 导出 OSIS 当前模型失败: {type(exc).__name__}: {exc};"
+                  "先确认模型已写回 OSIS(跑过 prep/main.py);没有 OSIS 时用 --candidate-dir 读代码",
+                  file=sys.stderr)
             return 2
-        candidate_dir = project / "py"
-        name = project.name
-        print(f"[info] 用 OSIS 当前项目: {project}", file=sys.stderr)
-    else:
-        # 指向 py/ 时取上一级项目目录名;否则取目录自身名
-        name = candidate_dir.parent.name if candidate_dir.name == "py" else candidate_dir.name
+        print(f"[info] 评 OSIS 当前模型: {name}", file=sys.stderr)
+        return _run(args, tmp / "py", name)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
+
+def _run(args: argparse.Namespace, candidate_dir: Path, name: str | None = None) -> int:
+    # 1. 候选目录;读代码模式指向 py/ 时取上一级项目目录名,否则取目录自身名
+    if name is None:
+        name = candidate_dir.parent.name if candidate_dir.name == "py" else candidate_dir.name
     if not candidate_dir.is_dir():
         print(f"[error] 候选目录不存在: {candidate_dir}", file=sys.stderr)
+        return 2
+    if candidate_dir.name == "prep":  # 规则按 prep/_N_xxx.py 认模块,给 prep/ 本身会全部读空
+        print("[error] --candidate-dir 要给 py/ 目录(下有 prep/),不是 prep/ 本身", file=sys.stderr)
         return 2
 
     # 2. 桥型路由

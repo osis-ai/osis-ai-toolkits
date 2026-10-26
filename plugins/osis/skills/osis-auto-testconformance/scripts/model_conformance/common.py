@@ -126,10 +126,9 @@ def _extract_section(node: ast.Call) -> dict[str, Any] | None:
             elif v.lower() in ("left", "middle", "right"):
                 girder_pos = v
             i += 1
-        elif isinstance(v, int):
-            # 新 API 的 no(整数)在开头 —— 记录第一个,后续跳过
-            if no_val is None:
-                no_val = v
+        elif isinstance(v, int) and i == 0:
+            # 新 API 的 no 是第一个参数;之后的整数是尺寸(如梁高写成 3),不能跳过
+            no_val = v
             i += 1
         else:
             break
