@@ -27,7 +27,7 @@ lc.create("GRAVITY")                          # 对象层:向工况加荷载—�
 engine.solve()
 ```
 
-- Manager 一律经 `engine.<name>` 访问:material / section / node / element / boundary / load / tendon(含 prop、shape)/ stage / live / settlement / stability / dynamic / post / result / control / geometry / prop / thickness / project。
+- Manager 一律经 `engine.<name>` 访问:material / section / node / element / boundary / load / tendon(含 prop、shape)/ stage / live / settlement / stability / dynamic / post / result / control / geometry / prop / thickness / project / display。
 - 各 Manager 有通用入口 `create(no, type, **kwargs)`,按 type 字符串转发到 `create_<type>`。
 - `create` / `get` 返回 dataclass,操作下沉到对象(如 `lc.create_gravity()`、`grp.add(1, 2)`)。
 
@@ -49,6 +49,22 @@ engine.solve()
 - 荷载 TYPE 字符串(如 `UTEMP`)、中文概念用 `api_grep` 搜;`lc.create("UTEMP", ...)` 转发到对应的 `create_*`。
 - `api_read` 遇同名歧义(如 `create`)返回 `candidates`,从中挑限定名再读,不要猜。
 - 仍不够才读源码 `site-packages/pyosis/<module>/manager.py`(`api_read` 给出源码位置)。
+
+## 控制 OSIS 画面(engine.display)
+
+用户要"在 OSIS 里只显示某几根钢束 / 某些边界、荷载""换个视角""截个图"时用:
+
+```python
+d = engine.display
+d.disp_ctrl("td", "all", "all", 0)                    # 先隐藏全部钢束
+d.disp_ctrl("td", "all", ["F0-1", "F0-1-复制1"], 1)  # 再按名称显示几根;边界 "bc"、荷载 "lg" 同理
+d.set_view("front")                                   # standard / top / right / front
+d.set_view("zoom", 1.5)                               # 缩放(值越小模型越小);平移 d.set_view("move", x, y)
+d.capture("tendon")                                   # 截图到 <项目目录>/image/tendon.jpg
+```
+
+- 显隐状态会一直保留:用完要恢复(`d.disp_ctrl("td", "all", "all", 1)`),或在回复里告诉用户怎么恢复。
+- 没有切换结果图(弯矩图、位移图、应力图)的接口:结果数据用 `engine.result` 查,结果图请用户在 OSIS 里自己切,不要去找。
 
 ## 关键坑(查签名看不出来的)
 

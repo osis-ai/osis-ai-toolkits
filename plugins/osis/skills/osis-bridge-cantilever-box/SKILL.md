@@ -281,4 +281,4 @@ CSxn+6    运营阶段(0d)
 python "<skill_dir>/scripts/spanremap.py" --to "<目标跨径>"
 ```
 
-看 stdout 校核(节点数、梁端、墩位、合龙 2m、单调/总长/镜像)。失败或非三跨 → 换近邻,不要手改。桥宽/h_root/板厚仍改 `_4`(必要时 `_6` 的 `h_elem`);只改 h_mid 走 `osis-edit-hmid`。贴底束 bottom 机制见 `osis-module-tendon`。
+看 stdout 校核(节点数、梁端、墩位、合龙 2m、单调/总长/镜像、钢束曲线全部改到、钢束圆弧放得下)。失败或非三跨 → 换近邻,不要手改。桥宽/h_root/板厚仍改 `_4`(必要时 `_6` 的 `h_elem`);只改 h_mid 走 `osis-edit-hmid`。贴底束 bottom 机制见 `osis-module-tendon`。

@@ -14,6 +14,7 @@ CLI:
 from __future__ import annotations
 
 import argparse
+import math
 import re
 import sys
 from dataclasses import dataclass
@@ -44,9 +45,13 @@ ELEM_RE = re.compile(
 GROUP_ADD_RE = re.compile(
     r'engine\.element\.group\.create\(\s*"([^"]+)"\s*,\s*"a"\s*,\s*(.*?)\)',
 )
+# create_arc2d("名", "TENDON", [...]) 与旧写法 create("名", "ARC2D", "TENDON", ...) 都认
 GEOM_RE = re.compile(
-    r'(engine\.geometry\.create\(\s*"([^"]+)"\s*,\s*"(ARC2D|ARC3D)"\s*,\s*"TENDON"\s*,\s*)(.*?)(\))',
+    r'(engine\.geometry\.(?:create\(\s*"(?P<n1>[^"]+)"\s*,\s*"(?P<k1>ARC2D|ARC3D)"'
+    r'|create_(?P<k2>arc2d|arc3d)\(\s*"(?P<n2>[^"]+)")\s*,\s*"TENDON"\s*,\s*)(?P<args>.*?)(\))',
 )
+# 所有 TENDON 曲线(不论写法),用来核对是否每条都改到了
+TENDON_GEOM_RE = re.compile(r'engine\.geometry\.\w+\([^)]*"TENDON"')
 SPAN_LINE_RE = re.compile(r"(跨径[:：][^\n]*)")
 TOKEN_RE = re.compile(r'"(\d+)\s*to\s*(\d+)"|(\d+)', re.I)
 
@@ -115,6 +120,32 @@ class SpanMap:
         if self.H - x <= ANCHOR_KEEP:
             return self.H_new - (self.H - x)
         return self.piecewise(x)
+
+    def _resized_zone(self, x: float) -> tuple[float, float] | None:
+        """x 落在长度会变的区(边跨现浇段、合龙两侧恒高段)内部时返回该区两端。"""
+        old, new = self.old_ks, self.new_ks
+        for i in range(len(old) - 1):
+            a, b = old[i], old[i + 1]
+            if a + EPS < x < b - EPS:
+                if abs((new[i + 1] - new[i]) - (b - a)) > EPS:
+                    return a, b
+                return None
+        return None
+
+    def curve_x(self, xs: list[float]) -> list[float]:
+        """钢束控制点 x:不按比例拉伸,否则锚端弯段被压短,R 不变时圆弧放不下、钢束飞出截面。
+        以最长直线段为界,两侧点各随本侧锚端平移(锚端在伸缩区里则随较近的区边界),长度变化全由这段直线吸收。"""
+
+        def end_shift(x: float) -> float:
+            zone = self._resized_zone(x)
+            if zone is not None:
+                a, b = zone
+                x = a if x - a <= b - x else b
+            return self.global_x(x) - x
+
+        s0, s1 = end_shift(xs[0]), end_shift(xs[-1])
+        k = max(range(len(xs) - 1), key=lambda i: xs[i + 1] - xs[i]) if len(xs) > 1 else 0
+        return [x + (s0 if i <= k else s1) for i, x in enumerate(xs)]
 
 
 def _configure_stdio() -> None:
@@ -429,39 +460,61 @@ def _is_local_arc2d(xs: list[float], gmin: float | None) -> bool:
     return min(xs) < 2.0 and gmin is not None and gmin > 5.0
 
 
+def _arcs_fit(pts: list[tuple[float, ...]], radii: list[float]) -> bool:
+    """各弯点按半径 R 倒圆所需的切线长 R·tan(θ/2),两端合计不能超过所在直线段长度。"""
+    n = len(pts)
+    tl = [0.0] * n
+    for i in range(1, n - 1):
+        if radii[i] <= 0:
+            continue
+        u = [b - a for a, b in zip(pts[i - 1], pts[i])]
+        v = [b - a for a, b in zip(pts[i], pts[i + 1])]
+        lu, lv = math.hypot(*u), math.hypot(*v)
+        if lu < EPS or lv < EPS:
+            return False
+        cos = sum(a * b for a, b in zip(u, v)) / (lu * lv)
+        tl[i] = radii[i] * math.tan(math.acos(max(-1.0, min(1.0, cos))) / 2.0)
+    return all(tl[i] + tl[i + 1] <= math.dist(pts[i], pts[i + 1]) + 1e-6 for i in range(n - 1))
+
+
 def remap_geometry_text(
     text: str,
     sm: SpanMap,
     groups: dict[str, list[int]],
     beams: dict[int, tuple[int, int]],
     nodes: dict[int, Node],
-) -> tuple[str, int]:
+) -> tuple[str, int, list[str]]:
     count = 0
-
-    def map_x(x: float, local: bool, gmin: float) -> float:
-        if not local:
-            return sm.global_x(x)
-        return sm.global_x(gmin + x) - sm.global_x(gmin)
+    bad: list[str] = []
 
     def repl(m: re.Match[str]) -> str:
         nonlocal count
-        name, kind, args = m.group(2), m.group(3), m.group(4)
+        name = m.group("n1") or m.group("n2")
+        kind = (m.group("k1") or m.group("k2")).upper()
+        args = m.group("args")
         stride = 3 if kind == "ARC2D" else 4
         nums = list(NUM_RE.finditer(args))
         xs = [float(nums[i].group()) for i in range(0, len(nums), stride)]
         gmin = _group_xmin(name, groups, beams, nodes)
         local = kind == "ARC2D" and _is_local_arc2d(xs, gmin)
-        gmin_v = gmin if gmin is not None else 0.0
+        base = gmin if local else 0.0  # 局部坐标先换成全局再映射
+        new_xs = [x - (sm.global_x(base) if local else 0.0) for x in sm.curve_x([base + x for x in xs])]
+        vals = [float(n.group()) for n in nums]
+        pts = [vals[i + 1 : i + stride - 1] for i in range(0, len(vals), stride)]
+        radii = [vals[i + stride - 1] for i in range(0, len(vals), stride)]
+        old_fit = _arcs_fit([(x, *p) for x, p in zip(xs, pts)], radii)
+        new_fit = _arcs_fit([(x, *p) for x, p in zip(new_xs, pts)], radii)
+        if any(b <= a for a, b in zip(new_xs, new_xs[1:])) or (old_fit and not new_fit):
+            bad.append(name)
         out = args
-        for i in reversed(range(0, len(nums), stride)):
+        for k, i in reversed(list(enumerate(range(0, len(nums), stride)))):
             tok = nums[i]
-            mapped = map_x(float(tok.group()), local, gmin_v)
-            out = out[: tok.start()] + fmt_num(mapped, tok.group()) + out[tok.end() :]
+            out = out[: tok.start()] + fmt_num(new_xs[k], tok.group()) + out[tok.end() :]
         count += 1
-        return m.group(1) + out + m.group(5)
+        return m.group(1) + out + ")"
 
     new_text = GEOM_RE.sub(repl, text)
-    return new_text, count
+    return new_text, count, bad
 
 
 def update_portrait(path: Path, new_spans: list[float], dry_run: bool) -> bool:
@@ -605,9 +658,18 @@ def run(ns: argparse.Namespace) -> int:
     lm = build_landmarks(nodes, beams, groups)
     sm = build_span_map(lm, old_spans, new_spans)
     new_node = remap_nodes_text(node_text, nodes, sm)
-    new_prop, ncurve = remap_geometry_text(prop_text, sm, groups, beams, nodes)
+    new_prop, ncurve, bent = remap_geometry_text(prop_text, sm, groups, beams, nodes)
     msgs = checks(nodes, lm, sm)
-    bad = [m for m in msgs if any(k in m for k in ("非单调", "失败", "不一致", "偏差", "≠"))]
+    total_curve = len(TENDON_GEOM_RE.findall(prop_text))
+    if ncurve != total_curve:
+        msgs.append(f"钢束曲线只改了 {ncurve}/{total_curve} 条,有写法没认出来")
+    else:
+        msgs.append(f"钢束曲线 {ncurve} 条 OK")
+    if bent:
+        msgs.append(f"钢束圆弧放不下(R 与直线段长度不匹配)失败: {', '.join(bent)}")
+    else:
+        msgs.append("钢束圆弧 OK")
+    bad = [m for m in msgs if any(k in m for k in ("非单调", "失败", "不一致", "偏差", "≠", "只改了"))]
     if bad:
         print("错误: 改跨校核未过:", file=sys.stderr)
         for m in msgs:

@@ -91,6 +91,8 @@ python py/post/main.py
 
 **坑**：
 - 求解器里默认没有选中单元，不调 `select_elements` 就报「目前无选中单元」；`set_member_type`、`set_check_items` 也要在选中单元之后。
+- `solve_checks()` 报 `计算验算失败: ... ultimate moment direction search did not find a same-direction intersection ...`（可能重复很多条，`Error/Error.err` 里也有）：这是 OSIS 抗弯验算的提示，不是错误，验算照常完成。报错里**只有这一种信息**时不要重跑、不要改模型或验算设置，确认 `Check/` 下本次的 `.lcc` 已生成就直接进步骤 3；还夹着别的信息再按错误处理。
+- `Error/Command.log` 里的 `PlEnv, <组合名>, ... 工况结果文件不存在`：是 OSIS 界面重画结果图时该组合还没算出来，和 `py/post/main.py` 无关，忽略。
 - `check_all()` 读的是 `<项目目录>/Check/*.lcc`，之前跑过、这次已删掉的验算项的旧表还在。减少验算项或改组合名之后，先删掉 `Check/` 下的旧文件再跑，或只看本次 `add_check` 对应的表。
 
 ## 步骤3：导出验算结果

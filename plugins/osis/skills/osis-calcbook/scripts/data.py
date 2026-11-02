@@ -60,7 +60,7 @@ def parse_value_file(file_path):
 
 
 def flat_list_to_table(json_path, col_count):
-    """将扁平列表的 JSON 文件转换为 docx_tool.py 要求的表格字典格式"""
+    """将扁平列表的 JSON 文件转换为 {"header", "data"} 表格字典"""
     with open(json_path, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
     header = data[:col_count]
