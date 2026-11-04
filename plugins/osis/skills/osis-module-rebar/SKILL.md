@@ -36,6 +36,7 @@ description: 普通钢筋建模模块。在已建截面上布置普通钢筋(纵
 
 - 间距参数名是 `interval`(不是 `int`);直径传字符串 `"D16"`。
 - 删除用 `delete_rebar_l(rebar_no)` / `delete_rebar_s(<类型>)`。
+- 腹板竖筋(竖向预应力)的 `effective_stress` 单位是 Pa,和钢束张拉控制应力一致:567.4 MPa 写 `5.674e8`,不是 `567400`。
 
 ## 抗剪类钢筋改参数
 

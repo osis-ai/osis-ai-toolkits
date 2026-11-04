@@ -1,11 +1,13 @@
 ---
 name: osis-check
-description: 荷载组合与规范验算(JTG),以及验算结果检查分析。当用户需要(1)做组合与验算、(2)查看验算结果、(3)分析NG项原因、(4)生成验算报告 时使用。
+description: 荷载组合与规范验算(JTG),以及验算结果检查分析。当用户需要(1)做组合与验算、(2)查看验算结果、(3)分析NG项原因、(4)生成验算报告、(5)钢束优化(验算后省钢、让应力储备均匀;用户明确要求才做) 时使用。
 ---
 
 # osis-check
 
 ## 工作流
+
+> 用户要**钢束优化**时不走下面的流程：先读 `references/tendon_optimize.md` 和桥型 SKILL 的 §钢束优化（之前读过桥型 SKILL 也重读这一节），按它的步骤做。
 
 ```
 用户请求
@@ -121,6 +123,7 @@ for name, df in results.items():
 - `scripts/load_lcc.py`：按单个或模式加载 `.lcc` 文件
 - `scripts/analyze_item.py`：分析指定 `.lcc` 验算项并输出 NG 详情
 - `scripts/extreme_values.py`：生成极值汇总和单元级最不利安全系数报告
+- `scripts/tendon_steel.py`：按 `py/prep` 统计各类钢束束数、根数、用钢量和共用规格（只读代码，不用求解）
 
 ## 步骤4：加载项目画像
 
@@ -138,6 +141,8 @@ for name, df in results.items():
 > 默认直接输出，不用写文件。
 
 ### 用户要求修改/优化/调整
+
+> 用户要的是**钢束优化**（省钢、储备均匀，不只是消 NG）时，按 `references/tendon_optimize.md` 做。
 
 1. 确认项目画像存在（不存在建议先创建）
 2. 用任务列表工具规划任务
