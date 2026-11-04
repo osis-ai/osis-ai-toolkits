@@ -18,3 +18,6 @@ Thumbs.db
 
 # 临时
 .tmp/
+
+# 本地 AI 宿主配置（PI 的 MCP / skill 挂载，不进仓库）
+.pi/
