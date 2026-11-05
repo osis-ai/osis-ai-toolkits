@@ -14,7 +14,7 @@ osis-ai-toolkits/
 ├── kimi.plugin.json                      Kimi Code manifest(从仓库根安装,MCP 内联)
 └── plugins/osis/
     ├── plugin.json            Codex 便携 manifest
-    ├── mcp.json               Codex MCP 配置(osis + weknora)
+    ├── mcp.json               Codex MCP 配置(osis + weknora + mct2osis)
     ├── .claude-plugin/plugin.json  Claude Code manifest
     ├── .mcp.json              Claude Code MCP 配置(同上,格式不同)
     ├── .qoder-plugin/plugin.json   Qoder manifest(MCP 内联)
@@ -31,7 +31,7 @@ osis-ai-toolkits/
 
 marketplace 名称（`osis-ai-toolkits`）与 plugin slug（`osis`）发布后保持稳定，不要改。
 
-各宿主的 MCP 配置只差格式，命令都是 `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m <模块>`，不依赖插件路径变量（测试校验各份与 `.mcp.json` 一致）。weknora 的 key 只从环境变量 `WEKNORA_API_KEY` 读，没有也能启动。ZCode、WorkBuddy 兼容 Claude 插件格式，不另写配置。
+各宿主的 MCP 配置只差格式，命令都是 `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m <模块>`，不依赖插件路径变量（测试校验各份与 `.mcp.json` 一致）。weknora 的 key 只从环境变量 `WEKNORA_API_KEY` 读，没有也能启动；mct2osis（代理源码在 `osis-mct2osis-mcp` 仓库）的 key 只从 `OSIS_MCT2OSIS_AUTHORIZATION` 读。ZCode、WorkBuddy 兼容 Claude 插件格式，不另写配置。
 
 ## 更新领域 skill
 

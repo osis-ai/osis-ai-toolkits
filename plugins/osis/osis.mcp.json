@@ -28,6 +28,19 @@
         "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1"
       },
       "description": "OSIS bridge template knowledge base (WeKnora)"
+    },
+    "mct2osis": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe",
+        "-P",
+        "-m",
+        "osis_mct2osis_mcp",
+        "https://www.osisbim.com/MctToOsis/mcp"
+      ],
+      "description": "Convert MIDAS MCT models to OSIS"
     }
   }
 }
