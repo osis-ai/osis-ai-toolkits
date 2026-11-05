@@ -7,7 +7,7 @@ description: >
   沉淀为 skill("新建个 skill""把这个流程做成 skill"),或要求修改/删除已有插件与 skill,
   或抱怨某官方 skill 不好用、要改官方 skill,  或要把当前模型入库("模型入库""做成模板"
   "加入模板库""把这座桥存成模板""以后基于这个模型改")时,都用本技能。包含插件契约
-  (%USERPROFILE%\.osisai\plugins、main.py 的 --ui/CLI 双模式、plugins.json 注册、
+  (%USERPROFILE%\.osisai\plugins、ui.tsx 界面 + main.py 后端、plugins.json 注册、
   icon.png 图标生成)与 skill 编写规范(用户 skill 只写
   %USERPROFILE%\.osisai\.agents\skills;同名整份替换官方,禁止改安装包)。
 ---
@@ -34,7 +34,7 @@ description: >
 
 | | 形态 | 适合 | 判据 |
 |---|---|---|---|
-| 插件 | `~/.osisai/plugins/<英文名>/main.py`,Python 程序 | 流程确定:固定格式的导入/导出、批量处理、计算、转换 | 全部逻辑能一次写进 main.py,以后只靠传参就能用 |
+| 插件 | `~/.osisai/plugins/<英文名>/`,`ui.tsx` 界面 + `main.py` 后端 | 流程确定:固定格式的导入/导出、批量处理、计算、转换 | 全部逻辑能一次写进代码,以后只靠填参数就能用 |
 | skill | `~/.osisai/.agents/skills/<英文名>/SKILL.md`,给 AI 的指导文档 | 流程灵活:要按环境试错,如特殊构型桥梁建模 | 每次都要 AI 看中间结果、改代码、再跑 |
 
 一句话自问:**"这个流程以后每次都要 AI 现场写代码吗?"** 不用 → 插件;用 → skill。
@@ -47,36 +47,21 @@ description: >
 
 `~/.osisai/plugins/<英文名>/`。英文名小写、简短、望文生义。目录名即插件 ID,plugins.json 与命令路径都用它,起名后不再改。若 `plugins/` 或 `plugins.json` 还不存在:建目录,写入 `[]` 作为 `~/.osisai/plugins/plugins.json`,需要第三方依赖时再建空的 `~/.osisai/plugins/requirements.txt`。
 
-### 2. 写 main.py —— 调用契约
+### 2. 写 ui.tsx 和 main.py
 
-插件有两类调用方,**输出契约**:
+插件界面写成 `ui.tsx`(SolidJS + TSX),在 OSIS-AI 界面里的插件窗口中渲染,用 OSIS-AI 自己的组件,和主界面一体;
+`main.py` 是后端,界面通过 `host.python()` 调它。**不要用 tkinter / customtkinter 等 Python 界面库。**
 
-- **插件管理 UI**(用户在 OSIS-AI 界面点开插件):固定 `python main.py --ui`,**不传任何其他参数**。**只在出错时抓 stderr 弹错误框**(error+exitCode+stderr 结构化文本,带 [复制全部])。**正常结果由插件自己的 GUI 窗口显示**(A 形态);B 形态被误点开时也是把用法打到 stderr 让 UI 弹框(详见下面 B 形态)
-- **CLI**(AI 或其他工具代替用户调用;本技能生成图标就是调 icon 插件的 CLI):`python main.py <参数>`,成功结果从 stdout 读;stderr 留给错误
+**写之前先读 `references/plugin_ui.md`**:ui.tsx 写法、能 import 什么、`host` 接口、组件清单、main.py 约定都在里面。
 
-据此选一种形态:
+从模板起步:把本技能 `assets/plugin_template/` 下的 `ui.tsx`、`main.py` 复制到插件目录再改。
 
-**A. GUI 插件**(参数要用户每次改,或要看丰富的结果):
+分工:
 
-- `--ui` 或无参数 → GUI,用合适的界面库,可现场装 (已预装customtkinter);窗口里正常显示结果
-- 传其他参数 → CLI(argparse),成功结果写 stdout,错误写 stderr
-- **正常结果交给 GUI 自己渲染;不要把结果打印到 stderr**——stderr 留给错误,UI 会把它当异常显示给用户
-
-**B. 纯 CLI 插件**(参数可以写死/有合理默认值):不做界面,但必须**忽略 `--ui`**——剥掉它后按 CLI 处理,且所有参数都带默认值,保证无参调用也能跑:
-
-```python
-def main() -> int:
-    args = sys.argv[1:]
-    if args and args[0] == "--ui":
-        args = args[1:]    # 无 GUI:忽略插件系统传来的 --ui
-    return run_cli(args)   # 无参时走 argparse 默认值
-```
-
-**B 形态被插件管理器 UI 误点开时**:用户点了插件但参数不该从 UI 来——插件无参,跑出用法自说明(docstring + 示例)打到 stderr 并返回非零。这样 UI 会弹出错误框,用户能看到这个插件没有界面、要在命令行怎么用。**注意:这跟"真正的错误"是两回事,但都用 stderr 通道让 UI 弹框**——所以是无参分支选 stderr,而不是"正常结果也走 stderr"这种通用契约。
-
-两种形态的 CLI 都遵守:成功结果写 stdout(给 CLI 调用方读);**错误写 stderr 并返回退出码 1**(任何调用方都能从 stderr 看到,UI 会弹错误框)。按"参数是否需要用户每次改"二选一:不要给纯 CLI 插件硬做界面,也不要给需要用户传参的插件漏掉 GUI——UI 调用方不会替用户传参。
-
-GUI 插件从模板起步:复制本技能 `assets/plugin_template.py` 为新 main.py 再改。核心逻辑写成独立函数(如 `do_work()`),GUI 与 CLI 共用一份,不要写两遍。
+- **ui.tsx**:输入、按钮、进度、结果展示、打开生成的文件、把结果交给 AI(`host.ask`)。界面能做的轻活(拼参数、格式化显示)在这里做
+- **main.py**:计算、读写文件、操作 OSIS 等实际逻辑。纯命令行(argparse),进度逐行打 stdout,最后一行打一行 JSON 结果,错误写 stderr、退出码 1
+- 只需给 OSIS 发几句命令流、不用 Python 的插件,可以只有 ui.tsx(`host.osis()`)
+- main.py 同时是给 AI / 命令行用的 CLI:AI 代替用户执行时直接 `python main.py <参数>`,读最后一行 JSON
 
 ### 3. 依赖
 
@@ -121,28 +106,26 @@ python ~/.osisai/plugins/icon/main.py \
 python <skill_dir>/scripts/register_plugin.py add \
   --name '单位换算器' --dir unitconv \
   --desc '单位换算:长度与温度单位互转' \
-  --detail 'GUI:选类别与单位,输数值点转换。命令行:...\unitconv\main.py 100 m mm 输出 100000'
+  --detail '界面:选类别与单位,输数值点转换。命令行:...\unitconv\main.py 100 m mm 输出 100000'
 ```
 
-脚本自动生成 `icon`(`<dir>/icon.png`)与 `cmd`(`<dir>/main.py`)字段,以 UTF-8 写回并自校验 JSON 合法性;重复注册会报错,改插件后重新注册加 `--replace`(原地替换,不打乱列表顺序)。`detail` 要亲自写好:GUI 用法 + CLI 实际命令与示例,命令里用 `...` 代指插件绝对路径前缀,风格对齐现有条目。
+脚本自动生成 `icon`(`<dir>/icon.png`)、`ui`(`<dir>/ui.tsx`)字段,有 main.py 时再加 `cmd`(`<dir>/main.py`);没有 ui.tsx 会报错。以 UTF-8 写回并自校验 JSON 合法性;重复注册会报错,改插件后重新注册加 `--replace`(原地替换,不打乱列表顺序)。`detail` 要亲自写好:界面用法 + 有 main.py 时的命令行实际命令与示例,命令里用 `...` 代指插件绝对路径前缀,风格对齐现有条目。
 
 ### 6. 验证(完工前必做)
 
-- CLI 真跑一遍:核对 stdout 输出(给 CLI 调用方读)与退出码
-- **错误路径确认写 stderr 且返回非零**(任何调用方 + UI 都看得到)
-- 纯 CLI 插件:实测 `python main.py --ui` 等于按默认参数执行;若会走"用法提示"分支,确认提示进了 stderr(UI 弹框靠它)
-- GUI 插件:在能开 GUI 的环境实测 `--ui`,窗口里能看见结果;**不需要**走 stderr
-- GUI 做静态检查即可(无显示环境):`python -m py_compile <main.py>`
+- ui.tsx 编译检查通过(命令见 `references/plugin_ui.md` §检查)
+- main.py 真跑一遍:核对 stdout 进度、最后一行 JSON、退出码;**错误路径确认写 stderr 且返回非零**
 - `python -m json.tool ~/.osisai/plugins/plugins.json` 通过
 - icon.png 已生成且非空
+- 界面效果要用户在 OSIS-AI 里点开插件确认,完工报告里请用户看一眼
 
 ### 7. 完工报告
 
-列出:插件路径、GUI 用法、CLI 用法示例(真实可复制)、依赖变动(装了什么、requirements.txt 加了什么)、plugins.json 已注册。
+列出:插件路径、界面用法、命令行用法示例(有 main.py 时,真实可复制)、依赖变动(装了什么、requirements.txt 加了什么)、plugins.json 已注册。
 
 ## 修改 / 删除插件
 
-- **改**:直接改 `~/.osisai/plugins/<英文名>/main.py`;用法变了就用 `register_plugin.py add --replace ...` 更新对应条目的 desc/detail
+- **改**:直接改 `~/.osisai/plugins/<英文名>/` 里的 ui.tsx / main.py,改完重跑第 6 步;用法变了就用 `register_plugin.py add --replace ...` 更新对应条目的 desc/detail。用户重新点开插件即加载新界面
 - **删**:删插件目录,再用 `register_plugin.py remove --dir <英文名>` 删掉条目
 
 ## 改官方 skill

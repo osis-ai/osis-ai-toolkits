@@ -9,13 +9,13 @@
     python <skill_dir>/scripts/register_plugin.py add \
         --name '单位换算器' --dir unitconv \
         --desc '单位换算:长度与温度单位互转' \
-        --detail 'GUI:选类别与单位,输数值点转换。命令行:...\\unitconv\\main.py 100 m mm 输出 100000'
+        --detail '界面:选类别与单位,输数值点转换。命令行:...\\unitconv\\main.py 100 m mm 输出 100000'
   覆盖已有条目(改插件后重新注册):同上,加 --replace
   删除条目(删插件时用):
     python <skill_dir>/scripts/register_plugin.py remove --dir unitconv
 
-add 自动生成:icon = <dir>/icon.png,cmd = <dir>/main.py。
-remove 按 icon/cmd 的目录前缀匹配整条删除。
+add 自动生成:icon = <dir>/icon.png,ui = <dir>/ui.tsx(必须已存在),有 main.py 时 cmd = <dir>/main.py。
+remove 按 ui/cmd/icon 的目录前缀匹配整条删除。
 """
 import argparse
 import json
@@ -28,7 +28,7 @@ PLUGINS_JSON = Path.home() / ".osisai" / "plugins" / "plugins.json"
 
 def _dir_of(entry: dict) -> str:
     """取条目指向的插件目录名(cmd/icon 路径的第一段)。"""
-    for key in ("cmd", "icon"):
+    for key in ("ui", "cmd", "icon"):
         parts = str(entry.get(key, "")).replace("\\", "/").split("/")
         if parts and parts[0]:
             return parts[0]
@@ -54,13 +54,19 @@ def cmd_add(ns: argparse.Namespace) -> int:
         who = ", ".join(f"第{i + 1}条({data[i].get('name')})" for i in dup)
         print(f"错误: 已存在 name={ns.name!r} 或目录 {ns.dir} 的条目 [{who}];覆盖请加 --replace", file=sys.stderr)
         return 1
+    plugin_dir = PLUGINS_JSON.parent / ns.dir
+    if not (plugin_dir / "ui.tsx").is_file():
+        print(f"错误: 缺少界面文件 {plugin_dir / 'ui.tsx'}", file=sys.stderr)
+        return 1
     entry = {
         "name": ns.name,
         "icon": f"{ns.dir}/icon.png",
         "desc": ns.desc,
         "detail": ns.detail,
-        "cmd": f"{ns.dir}/main.py",
+        "ui": f"{ns.dir}/ui.tsx",
     }
+    if (plugin_dir / "main.py").is_file():
+        entry["cmd"] = f"{ns.dir}/main.py"
     if dup:  # --replace:原地替换第一条,其余重复删掉,保持列表顺序不变
         first = dup[0]
         data = [e for i, e in enumerate(data) if i not in set(dup)]
@@ -91,7 +97,7 @@ def main() -> int:
     p_add.add_argument("--name", required=True, help="中文显示名(图标文字取它第一个字)")
     p_add.add_argument("--dir", required=True, help="插件英文目录名")
     p_add.add_argument("--desc", required=True, help="一句话功能")
-    p_add.add_argument("--detail", required=True, help="用法详情:GUI 用法 + CLI 实际命令与示例")
+    p_add.add_argument("--detail", required=True, help="用法详情:界面用法 + 命令行实际命令与示例")
     p_add.add_argument("--replace", action="store_true", help="已存在同名/同目录条目时覆盖而非报错")
     p_add.set_defaults(fn=cmd_add)
 

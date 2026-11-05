@@ -4,13 +4,13 @@
     {
       "id": 0,
       "prompt": "帮我做个 OSIS 插件:单位换算器。长度单位 m/mm/cm/km/ft 互转,温度单位 摄氏/华氏/开尔文互转。要带界面。(插件英文目录名用 unitconv)",
-      "expected_output": "GUI 插件:~/.osisai/plugins/unitconv/{main.py,icon.png},customtkinter GUI + argparse CLI 双模式,CLI 转换结果正确(100 m mm→100000、100 C F→212),plugins.json 追加合法条目",
+      "expected_output": "~/.osisai/plugins/unitconv/{ui.tsx,main.py,icon.png}:ui.tsx 用 host.ui 组件(不 import npm 包、不用 Tailwind 类名),经 host.python 调 main.py;main.py 纯 argparse CLI、不用 tkinter/customtkinter,结果正确(100 m mm→100000、100 C F→212)且最后一行 JSON;ui.tsx 编译检查通过;plugins.json 条目含 ui 与 cmd",
       "files": []
     },
     {
       "id": 1,
-      "prompt": "帮我做个插件,把指定的 CSV 文件按某列分组,对数值列求和,输出汇总结果。命令行能用就行,不用做界面。(插件英文目录名用 csvsum)",
-      "expected_output": "纯 CLI 插件:~/.osisai/plugins/csvsum/main.py,无 GUI 但正确忽略 --ui(剥掉后按默认参数执行不报错),CLI 分组求和正确,plugins.json 注册",
+      "prompt": "帮我做个插件,把指定的 CSV 文件按某列分组,对数值列求和,输出汇总结果。(插件英文目录名用 csvsum)",
+      "expected_output": "~/.osisai/plugins/csvsum/{ui.tsx,main.py}:界面用 FileField 选 CSV、Select/TextField 选分组列与数值列,结果用 Table 显示;main.py CLI 分组求和正确、最后一行 JSON、错误写 stderr 退出码 1;plugins.json 注册",
       "files": []
     },
     {

@@ -116,20 +116,21 @@ python <skill_dir>/scripts/docx_fill.py apply "模板.docx" mapping.json -o 计�
 
 ### 6. 打包成插件(用户同意时)
 
-一个模板一个插件。插件对当前打开的 OSIS 项目跑 `data.py`,按映射生成 `<项目根>/计算书_<模板名>.docx`(重名加序号),有 GUI,也能命令行调用 `main.py [-o 输出.docx]`。
+一个模板一个插件。插件对当前打开的 OSIS 项目跑 `data.py`,按映射生成 `<项目根>/计算书_<模板名>.docx`(重名加序号);界面是 `ui.tsx`(在 OSIS-AI 里点插件打开),也能命令行调用 `main.py [-o 输出.docx]`。
 
 ```bash
 D=~/.osisai/plugins/<英文名>        # 如 calcbook_xxy,命名规则见 osis-customize-osisai
 mkdir -p "$D"
-cp "模板.docx" "$D/"                # 目录里只能有这一个 .docx,文件名就是插件窗口标题
+cp "模板.docx" "$D/"                # 目录里只能有这一个 .docx
 cp mapping.json "$D/"
 cp <skill_dir>/scripts/docx_fill.py <skill_dir>/scripts/data.py "$D/"
 cp <skill_dir>/assets/plugin_main.py "$D/main.py"
+cp <skill_dir>/assets/plugin_ui.tsx "$D/ui.tsx"
 ```
 
-然后按 `osis-customize-osisai` 的第 4、5 步生成图标、注册到 `plugins.json`(名称如"××院计算书",detail 写:GUI 点"生成计算书";命令行 `...\<英文名>\main.py [-o 输出.docx]`;需 OSIS 已打开项目并完成验算)。
+然后按 `osis-customize-osisai` 的第 4、5 步生成图标、注册到 `plugins.json`(名称如"××院计算书",detail 写:界面点"生成计算书";命令行 `...\<英文名>\main.py [-o 输出.docx]`;需 OSIS 已打开项目并完成验算)。
 
-验证:`python -m py_compile "$D/main.py"`;在当前项目上跑 `python "$D/main.py" -o 插件测试.docx`,确认生成成功、结果与第 4 步一致后删掉测试文件。
+验证:按 `osis-customize-osisai` 第 6 步检查 ui.tsx;在当前项目上跑 `python "$D/main.py" -o 插件测试.docx`,确认生成成功、结果与第 4 步一致后删掉测试文件。
 
 
 **修改已有插件**:映射有问题时改 `~/.osisai/plugins/<英文名>/mapping.json`,用该目录里的模板按第 4 步验证;模板换了就重新走第 2–4 步。
