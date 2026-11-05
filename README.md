@@ -121,6 +121,10 @@ codex plugin add osis@osis-ai-toolkits
       "command": "cmd",
       "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "-m", "weknora_mcp_server"],
       "env": { "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1" }
+    },
+    "mct2osis": {
+      "command": "cmd",
+      "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "-m", "osis_mct2osis_mcp", "https://www.osisbim.com/MctToOsis/mcp"]
     }
   }
 }
