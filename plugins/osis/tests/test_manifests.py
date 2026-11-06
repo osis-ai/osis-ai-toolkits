@@ -244,6 +244,6 @@ def test_broker_endpoint_reachable_if_running():
 
 
 def test_no_api_key_in_plugin_files():
-    """key 不进仓库(公开):weknora_mcp_server 从环境变量 WEKNORA_API_KEY 读,没有也能启动。"""
+    """key 不进仓库(公开):weknora_mcp_server 从环境变量 OSIS_WEKNORA_API_KEY 读,没有也能启动。"""
     leaked = [p.name for p in PLUGIN_ROOT.rglob("*.json") if re.search(r"sk-[A-Za-z0-9_-]{20,}", p.read_text(encoding="utf-8"))]
     assert not leaked, f"配置里出现了 API key: {leaked}"

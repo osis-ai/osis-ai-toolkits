@@ -22,8 +22,8 @@
 | server | 类型 | 说明 |
 |---|---|---|
 | `osis` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m osis_broker --stdio` | OSIS Agent Broker。本机 `127.0.0.1:18080` 没有 Broker 就后台拉起一个(独立进程,OSIS 与其他会话共用,会话结束不退出),再把 MCP 消息转发给它;不用手动启动 Broker |
-| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m weknora_mcp_server`(用 OSIS 环境的 Python;`-P` 不把 cwd(宿主的项目目录)加进 sys.path,防止项目里的同名 .py 盖掉依赖;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量) | 桥梁模板/知识库检索。key 不进配置:从环境变量 `WEKNORA_API_KEY` 读,没有也照常启动,只是知识库工具鉴权失败 |
-| `mct2osis` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m osis_mct2osis_mcp https://www.osisbim.com/MctToOsis/mcp`(代理在 `osis-mct2osis-mcp` 仓库) | MIDAS MCT 转 OSIS。本地代理连远程转换服务,替模型读 MCT 文件上传、把结果 .out 下载到 MCT 旁边,文件内容不经过模型。key 不进配置:从环境变量 `OSIS_MCT2OSIS_AUTHORIZATION`(完整的 `Bearer ...`)读 |
+| `weknora` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m weknora_mcp_server`(用 OSIS 环境的 Python;`-P` 不把 cwd(宿主的项目目录)加进 sys.path,防止项目里的同名 .py 盖掉依赖;`cmd /c` 负责展开 `%USERPROFILE%`,Codex 不展开 command 里的变量) | 桥梁模板/知识库检索。key 不进配置:先读环境变量 `OSIS_WEKNORA_API_KEY`,没有再读 `--set-key` 存的本机加密 key(Windows DPAPI),都没有也照常启动,只是知识库工具鉴权失败 |
+| `mct2osis` | stdio `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m osis_mct2osis_mcp https://www.osisbim.com/MctToOsis/mcp`(代理在 `osis-mct2osis-mcp` 仓库) | MIDAS MCT 转 OSIS。本地代理连远程转换服务,替模型读 MCT 文件上传、把结果 .out 下载到 MCT 旁边,文件内容不经过模型。key 不进配置:先读环境变量 `OSIS_MCT2OSIS_AUTHORIZATION`(完整的 `Bearer ...`),没有再读 `python -m osis_mct2osis_mcp --set-key` 存的本机加密 key(Windows DPAPI) |
 
 ## Skill
 

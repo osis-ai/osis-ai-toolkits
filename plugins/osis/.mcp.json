@@ -10,7 +10,7 @@
       "command": "cmd",
       "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "-m", "weknora_mcp_server"],
       "env": {
-        "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1"
+        "OSIS_WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1"
       }
     },
     "mct2osis": {

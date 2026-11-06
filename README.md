@@ -120,7 +120,7 @@ codex plugin add osis@osis-ai-toolkits
     "weknora": {
       "command": "cmd",
       "args": ["/c", "%USERPROFILE%\\.osisai\\.venv\\Scripts\\python.exe", "-P", "-m", "weknora_mcp_server"],
-      "env": { "WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1" }
+      "env": { "OSIS_WEKNORA_BASE_URL": "https://knowledge.osisbim.com/api/v1" }
     },
     "mct2osis": {
       "command": "cmd",
@@ -172,13 +172,21 @@ codex plugin marketplace remove osis-ai-toolkits      :: 可选
 
 其他平台在各自的插件管理页卸载。
 
-## 可选：知识库
+## 可选：知识库与 MCT 转换
 
-插件自带桥梁模板；自带模板里找不到时，会再查 WeKnora 知识库。向管理员要访问 key，设成 Windows 环境变量 `WEKNORA_API_KEY`：
+- 知识库：插件自带桥梁模板；自带模板里找不到时，会再查 WeKnora 知识库。
+- MCT 转换：把 MIDAS 的 MCT 模型转成 OSIS 模型。
 
-- 开始菜单搜「编辑系统环境变量」→ 环境变量 → 新建，变量名 `WEKNORA_API_KEY`，值填 key；
-- 或在命令行执行 `setx WEKNORA_API_KEY 你的key`。
+两者都要向管理员要访问 key，设成 Windows 环境变量：
+
+| 功能 | 变量名 | 值 |
+|---|---|---|
+| 知识库 | `OSIS_WEKNORA_API_KEY` | key |
+| MCT 转换 | `OSIS_MCT2OSIS_AUTHORIZATION` | `Bearer 你的key` |
+
+- 开始菜单搜「编辑系统环境变量」→ 环境变量 → 新建，按上表填变量名和值；
+- 或在命令行执行 `setx OSIS_WEKNORA_API_KEY 你的key`、`setx OSIS_MCT2OSIS_AUTHORIZATION "Bearer 你的key"`。
 
 设好后**完全退出并重开** Agent 应用（Claude Code、Codex、ZCode 等），新值才会生效。
 
-不设置插件也能正常打开，只是知识库查不了。
+不设置插件也能正常打开，只是对应功能用不了。
