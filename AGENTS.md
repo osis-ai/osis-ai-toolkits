@@ -31,7 +31,7 @@ osis-ai-toolkits/
 
 marketplace 名称（`osis-ai-toolkits`）与 plugin slug（`osis`）发布后保持稳定，不要改。
 
-各宿主的 MCP 配置只差格式，命令都是 `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m <模块>`，不依赖插件路径变量（测试校验各份与 `.mcp.json` 一致）。weknora 的 key 先读环境变量 `OSIS_WEKNORA_API_KEY`，没有再读 `python -m weknora_mcp_server --set-key` 存的本机 DPAPI 加密 key，都没有也能启动；mct2osis（代理源码在 `osis-mct2osis-mcp` 仓库）的 key 先读 `OSIS_MCT2OSIS_AUTHORIZATION`，没有再读 `--set-key` 存的本机 DPAPI 加密 key。ZCode、WorkBuddy 兼容 Claude 插件格式，不另写配置。
+各宿主的 MCP 配置只差格式，命令都是 `cmd /c %USERPROFILE%\.osisai\.venv\Scripts\python.exe -P -m <模块>`，不依赖插件路径变量（测试校验各份与 `.mcp.json` 一致）。weknora 的 key 先读环境变量 `OSIS_WEKNORA_API_KEY`，没有再读 `python -m weknora_mcp_server --set-key` 存的本机 DPAPI 加密 key，都没有也能启动；mct2osis（代理源码在 `osis-mct2osis-mcp` 仓库）用 OSIS 客户端的登录 token（`%TEMP%\osis_session.dat`），没有再读 `OSIS_MCT2OSIS_AUTHORIZATION`。ZCode、WorkBuddy 兼容 Claude 插件格式，不另写配置。
 
 ## 更新领域 skill
 

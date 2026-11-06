@@ -175,17 +175,12 @@ codex plugin marketplace remove osis-ai-toolkits      :: 可选
 ## 可选：知识库与 MCT 转换
 
 - 知识库：插件自带桥梁模板；自带模板里找不到时，会再查 WeKnora 知识库。
-- MCT 转换：把 MIDAS 的 MCT 模型转成 OSIS 模型。
+- MCT 转换：把 MIDAS 的 MCT 模型转成 OSIS 模型。**在 OSIS 里登录过即可使用**，自动使用当前 OSIS 账号的登录凭证，不用配 key（需要 OSIS Python 环境里的 osis-mct2osis-mcp ≥ 0.2.0）。
 
-两者都要向管理员要访问 key，设成 Windows 环境变量：
+知识库要向管理员要访问 key，设成 Windows 环境变量 `OSIS_WEKNORA_API_KEY`：
 
-| 功能 | 变量名 | 值 |
-|---|---|---|
-| 知识库 | `OSIS_WEKNORA_API_KEY` | key |
-| MCT 转换 | `OSIS_MCT2OSIS_AUTHORIZATION` | `Bearer 你的key` |
-
-- 开始菜单搜「编辑系统环境变量」→ 环境变量 → 新建，按上表填变量名和值；
-- 或在命令行执行 `setx OSIS_WEKNORA_API_KEY 你的key`、`setx OSIS_MCT2OSIS_AUTHORIZATION "Bearer 你的key"`。
+- 开始菜单搜「编辑系统环境变量」→ 环境变量 → 新建，变量名 `OSIS_WEKNORA_API_KEY`，值填 key；
+- 或在命令行执行 `setx OSIS_WEKNORA_API_KEY 你的key`。
 
 设好后**完全退出并重开** Agent 应用（Claude Code、Codex、ZCode 等），新值才会生效。
 
