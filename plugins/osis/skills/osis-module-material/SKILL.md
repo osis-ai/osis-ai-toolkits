@@ -38,7 +38,7 @@ engine.material.create_prestressed(3, "Strand1860", "JTG3362_2018", "Strand1860"
 - 参数一律用关键字写,不要按位置传(参数顺序随 pyosis 版本变过)。
 - `fcuk` 在收缩徐变里,不在材料里:**不同强度等级的混凝土各建一条收缩徐变**,别让 C55 和 C40 共用一个编号。
 - **没有加载龄期参数**。加载龄期由施工阶段激活单元时的龄期给出。
-- `shrink_birth`(旧写法)在 pyosis 0.9.2 已删除,只写 `birth_by_shrinking`,传了会 `TypeError`。
+- `birth_by_shrinking` 是收缩开始龄期;没有 `shrink_birth` 这个参数。
 - 默认值:`avg_humidity` 70~75、`birth_by_shrinking=3`;项目另有规定时按项目。
 
 阻尼比默认:混凝土/钢绞线 `0.05`、精轧螺纹钢 `0.02`。

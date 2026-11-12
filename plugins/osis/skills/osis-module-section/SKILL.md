@@ -49,7 +49,7 @@ sec.set_mesh(part_id=1, mesh_method=0, mesh_size=0.1)   # 0=默认, 1=自定义
 ```
 
 - **`offset_type_z` 默认是 `"Center"`,不是 `"Top"`**;主梁顶缘对齐要显式传 `"Top"`。
-- **`set_mesh` 的参数名是 `mesh_method`,不是 `method`**。pyosis 0.9.2 起形参顺序是 `(part_id, mesh_method, mesh_size)`,与命令流 `SectionMesh, Index, PartID, MeshMethod, MeshSize` 一致;老写法 `set_mesh(0, 0.1)` 会被读成 `part_id=0`、`mesh_method=0.1`,必须写 `set_mesh(1, 0, 0.1)`。`part_id` 混凝土截面填 1,模板组合截面填 2。
+- **`set_mesh` 的参数名是 `mesh_method`,不是 `method`**;形参顺序 `(part_id, mesh_method, mesh_size)`,与命令流 `SectionMesh, Index, PartID, MeshMethod, MeshSize` 一致。`part_id` 混凝土截面填 1,模板组合截面填 2,`mesh_method` 0=自动/1=手动,`mesh_size` 只在手动时起作用;模板统一写 `set_mesh(1, 0, 0.1)`。
 - **偏移**:中梁/边梁 y 偏移由截面 API 的梁位参数决定(各 API 名字不同,如 `e_girder_pos` / `girder_pos`,取值大小写也不同,以 `api_read` 为准),`offset_value_y` 通常为 0。自定义截面的 y 偏移需显式给出。
 - **网格**:默认 0.1m;变截面段可加密到 0.05m,桥墩等粗略截面可用 0.2m。
 
