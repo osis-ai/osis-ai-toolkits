@@ -6,6 +6,19 @@
 from pyosis import OSISEngine, batch
 
 
+
+def bare_elements(engine: OSISEngine) -> list[int]:
+    """既没纵筋、两端也不都在钢束范围内的单元（如刚构的墩、梁端锚固点外的单元），验算时跳过。"""
+    # shortcut: 钢束范围按整体 x 判断，只适合沿 x 布置的直桥；平曲线桥要改成按钢束线形投影
+    rebar = {e for s in engine.section.all() if s.rebar.longitudinal_rebars_count for e in s.related_elements}
+    x = {n.no: n.x for n in engine.node.all()}
+    groups = {g.name: set(g.elements) for g in engine.element.group.all()}
+    spans = [(groups.get(s.ele_grp, set()), min(p["x"] for p in s.points) - 1e-6, max(p["x"] for p in s.points) + 1e-6)
+             for s in engine.tendon.shape.all() if s.points]
+    return sorted(e.no for e in engine.element.all() if e.no not in rebar and not any(
+        e.no in grp and lo <= x[e.node_i] <= hi and lo <= x[e.node_j] <= hi for grp, lo, hi in spans))
+
+
 def build_post(engine: OSISEngine) -> None:
     post = engine.post
 
@@ -1008,7 +1021,10 @@ def build_post(engine: OSISEngine) -> None:
         post.add_check("CSNC", "MinMax")
         post.add_check("CSNT", "MinMax")
         post.add_check("CrackL", "准永久组合包络")
-    post.select_elements("All")  # 只验算部分单元时改这里，如 post.select_elements("S", "1to20")
+    post.select_elements("All")
+    bare = bare_elements(engine)
+    if bare:
+        post.select_elements("U", *bare)  # 只验算部分单元时改这里，如 post.select_elements("S", "1to20")
     post.set_member_type("APC", "Cast", "Post")  # 构件类型、施工方式（Pre 预制 / Cast 现浇）、张拉方式
     post.set_check_items("All")  # 只开部分验算项：post.set_check_items('[{"UltM":1,"Shear":1}]')
     post.solve_checks()
