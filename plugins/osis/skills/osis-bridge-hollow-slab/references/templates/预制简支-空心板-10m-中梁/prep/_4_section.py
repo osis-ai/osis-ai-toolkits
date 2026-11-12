@@ -12,13 +12,13 @@ def build_sections(engine: OSISEngine) -> None:
     # 设置截面偏移。
     engine.section.get(1).set_offset("Middle", 0.0, "Top", 0.0)
     # 设置截面网格。
-    engine.section.get(1).set_mesh(0, 0.1)
+    engine.section.get(1).set_mesh(1, 0, 0.1)
     engine.section.create(2, "墩顶截面", "HOLLOWSLAB", "Middle", 0.65, 1.0, 0.62, 0.0, 0.12, 0.25, 0.32, 0.12, 0.24, 0.38, 0.12, 0.08, 0.12, 0.08, 0.0, 0.05, 0.0, 0.08, 0.12)
     engine.section.get(2).set_offset("Middle", 0.0, "Top", 0.0)
-    engine.section.get(2).set_mesh(0, 0.1)
+    engine.section.get(2).set_mesh(1, 0, 0.1)
     engine.section.create(3, "加厚截面", "HOLLOWSLAB", "Middle", 0.65, 1.0, 0.57, 0.05, 0.12, 0.25, 0.24, 0.12, 0.24, 0.38, 0.12, 0.08, 0.12, 0.08, 0.05, 0.05, 0.08, 0.08, 0.12)
     engine.section.get(3).set_offset("Middle", 0.0, "Top", 0.0)
-    engine.section.get(3).set_mesh(0, 0.1)
+    engine.section.get(3).set_mesh(1, 0, 0.1)
     # 添加或修改纵向钢筋（按输入方式分发）
     engine.section.get(1).add_rebar_l(1, "LineA", 2, "Center", 0.0, "Bottom", 0.05, 12, 0.1, "D16")
     # 添加或修改抗剪钢筋（按类型分发）

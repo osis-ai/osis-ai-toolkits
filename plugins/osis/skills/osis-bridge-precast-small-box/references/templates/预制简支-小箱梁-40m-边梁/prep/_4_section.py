@@ -12,19 +12,19 @@ def build_sections(engine: OSISEngine) -> None:
     # 设置截面偏移。
     engine.section.get(1).set_offset("Middle", 0.1032, "Top", 0.0)
     # 设置截面网格。
-    engine.section.get(1).set_mesh(0, 0.1)
+    engine.section.get(1).set_mesh(1, 0, 0.1)
     engine.section.create(2, "墩顶截面", "SMALLBOX", "Left", 2.1, 1.65, 1.2, 0.0, 1.0, 0.2, 0.36, 0.32, 4.0, 0.2, 0.27, 0.2, 0.15, 0.27, 0.05, 0.05, 0, 0.0, 0.0, 0.0)
     engine.section.get(2).set_offset("Middle", 0.0775, "Top", 0.0)
-    engine.section.get(2).set_mesh(0, 0.1)
+    engine.section.get(2).set_mesh(1, 0, 0.1)
     engine.section.create(3, "加厚截面", "SMALLBOX", "Left", 2.1, 1.65, 1.2, 0.0, 1.0, 0.2, 0.36, 0.32, 4.0, 0.2, 0.27, 0.2, 0.15, 0.27, 0.05, 0.05, 0, 0.0, 0.0, 0.0)
     engine.section.get(3).set_offset("Middle", 0.0775, "Top", 0.0)
-    engine.section.get(3).set_mesh(0, 0.1)
+    engine.section.get(3).set_mesh(1, 0, 0.1)
     engine.section.create(5, "截面1", "SMALLBOX", "Left", 2.1, 1.65, 1.2, 0.0, 1.0, 0.2, 0.27, 0.26, 4.0, 0.2, 0.27, 0.2, 0.15, 0.27, 0.05, 0.05, 0, 0.0, 0.0, 0.0)
     engine.section.get(5).set_offset("Middle", 0.0881, "Top", 0.0)
-    engine.section.get(5).set_mesh(0, 0.1)
+    engine.section.get(5).set_mesh(1, 0, 0.1)
     engine.section.create(6, "截面2", "SMALLBOX", "Left", 2.1, 1.65, 1.2, 0.0, 1.0, 0.2, 0.27, 0.26, 4.0, 0.2, 0.27, 0.2, 0.15, 0.27, 0.05, 0.05, 0, 0.0, 0.0, 0.0)
     engine.section.get(6).set_offset("Middle", 0.0881, "Top", 0.0)
-    engine.section.get(6).set_mesh(0, 0.1)
+    engine.section.get(6).set_mesh(1, 0, 0.1)
 
 if __name__ == "__main__":
     from _0_engine import engine

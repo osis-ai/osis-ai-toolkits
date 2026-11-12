@@ -26,7 +26,7 @@ def setup_control(engine: OSISEngine) -> None:
     # 是否考虑钢束自重及钢束对截面几何特性的影响
     engine.control.set_inc_tendon(1)
     # 设置非线性控制开关
-    engine.control.set_nonlinear(0, 0)
+    engine.control.set_nonlinear(0)
     # 设置线性搜索开关
     engine.control.set_line_search(0)
     # 设置是否自动计算时间荷载步

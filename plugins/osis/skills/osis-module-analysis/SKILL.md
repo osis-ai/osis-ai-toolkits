@@ -33,13 +33,16 @@ st.include("a", "桥墩1沉降组", "桥台1沉降组")                    # op 
 
 ```python
 engine.live.grade.create_highway(name="移动荷载体系", code="JTGD60_2015", live_load_type="HIGHWAY_I")
+# pyosis 0.9.2 起 create_ve/create_tcb 只收位置参数(与命令流 InflAlgo 字段逐位对应),
+# ref_elems/offset_y/offset_z/spline_name 这些关键字名已删除,写关键字会 TypeError。
+# ref=0 尾部三个位置参数: 参照单元组名, offset_y, offset_z;ref=1 尾部两个: 组名, 样条曲线名。
 engine.live.lane.create_ve(
-    name="车道1", length=24.46, wheel=1.80, orientation=1,
-    ref=0, ref_elems="主梁单元",   # ref=0 参照单元组时必填,必须等于 `_6` 建的组名
-    offset_y=0.0, offset_z=0.0,
+    "车道1", 24.46, 1.80, 1, 0,
+    "主梁单元", 0.0, 0.0,   # ref=0 参照单元组时必填,必须等于 `_6` 建的组名
 )
 ```
 
+- 便捷入口 `live.lane.create(name, "VE", ...)` 尾部参数同上,可直接写 `create("车道1", "VE", 24.46, 1.80, 1, 0, "主梁单元", 0.0, 0.0)`。
 - `length` 在 docstring 里是"桥梁跨度"(m),取值由桥型层给定。
 - 车道数、横向位置、是否设中载 + 左右偏载由桥型层 + 桥宽决定,本模块按方案创建。
 

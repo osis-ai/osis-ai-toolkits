@@ -36,7 +36,7 @@ engine.control.set_calc_concurrent_force(1)             # 计算并发反力
 engine.control.set_calc_relaxation(1)                   # 计算钢束松弛
 engine.control.set_inc_tendon(1)                        # 钢束自重及几何影响
 engine.control.set_mod_loc_coor(0)                      # 不修改变截面单元局部坐标
-engine.control.set_nonlinear(geom=0, link=0)            # 不开非线性
+engine.control.set_nonlinear(geom=0)                    # 不开非线性(0.9.2 起 link 形参已删除)
 engine.control.set_line_search(0)                       # 不开线性搜索
 engine.control.set_auto_time_step(0)                    # 不开自动时间步
 engine.control.set_substitution_steps(nls, nsbmx)       # 荷载步数 + 最大子步数

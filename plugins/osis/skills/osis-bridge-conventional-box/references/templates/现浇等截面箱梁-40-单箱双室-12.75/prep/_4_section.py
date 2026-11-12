@@ -12,7 +12,7 @@ def build_sections(engine: OSISEngine) -> None:
     # 设置截面偏移。
     engine.section.get(1).set_offset("Middle", 0.0, "Top", 0.0)
     # 设置截面网格。
-    engine.section.get(1).set_mesh(0, 0.1)
+    engine.section.get(1).set_mesh(1, 0, 0.1)
 
 if __name__ == "__main__":
     from _0_engine import engine

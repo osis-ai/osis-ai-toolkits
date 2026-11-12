@@ -12,13 +12,13 @@ def build_sections(engine: OSISEngine) -> None:
     # 设置截面偏移。
     engine.section.get(1).set_offset("Middle", 0.0111, "Top", 0.0)
     # 设置截面网格。
-    engine.section.get(1).set_mesh(0, 0.1)
+    engine.section.get(1).set_mesh(1, 0, 0.1)
     engine.section.create(2, "墩顶截面", "TGIRDER", "Left", 0.9, 0.65, 0.6, 0.0, 0.18, 0.33, 0.2, 0.35, 0.35, 0.1, 0.1, 0, 0.0, 0.0, 0.0)
     engine.section.get(2).set_offset("Middle", 0.0111, "Top", 0.0)
-    engine.section.get(2).set_mesh(0, 0.1)
+    engine.section.get(2).set_mesh(1, 0, 0.1)
     engine.section.create(3, "加厚截面", "TGIRDER", "Left", 0.9, 0.65, 0.6, 0.0, 0.18, 0.33, 0.2, 0.35, 0.35, 0.1, 0.1, 0, 0.0, 0.0, 0.0)
     engine.section.get(3).set_offset("Middle", 0.0111, "Top", 0.0)
-    engine.section.get(3).set_mesh(0, 0.1)
+    engine.section.get(3).set_mesh(1, 0, 0.1)
     # 添加或修改抗剪钢筋（按类型分发）
     engine.section.get(1).add_rebar_s("ShearStirrup", 2, 0.15, 0.000226195)
     engine.section.get(2).add_rebar_s("ShearStirrup", 2, 0.15, 0.000226195)

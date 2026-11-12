@@ -14,10 +14,10 @@ def build_sections(engine: OSISEngine) -> None:
     # 设置截面偏移。
     engine.section.get(1).set_offset("Middle", 0.0, "Top", 0.0)
     # 设置截面网格。
-    engine.section.get(1).set_mesh(0, 0.1)
+    engine.section.get(1).set_mesh(1, 0, 0.1)
     engine.section.create(2, "16.75_", "CONVENTIONALBOX", 2.0, 8.375, 8.375, 6.375, 6.375, 0.5, 0.25, 0.22, 0.5, 0.5, 3, 3.5833, 3.5834, 3.5833, 3.5833, 0.0, 0.45, 0.8, 0.45, 0.8, 0.45, 0.6, 0.2, 0.6, 0.2, 0.8, 0.45, 0.6, 0.2, 2.0, 0.15, 0.0, 0.45, 0.45, 1, 2.0, 0.15, 0.0, 0.45, 0.45, "Integral", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     engine.section.get(2).set_offset("Middle", 0.0, "Top", 0.0)
-    engine.section.get(2).set_mesh(0, 0.1)
+    engine.section.get(2).set_mesh(1, 0, 0.1)
 
 if __name__ == "__main__":
     from _0_engine import engine
