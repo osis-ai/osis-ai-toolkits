@@ -204,7 +204,8 @@ def _geometry_from_pier_and_beam_nodes(
             true_pier_centers[0] - left_abutment,
             right_abutment - true_pier_centers[-1],
         ),
-        "main_span": true_pier_centers[-1] - true_pier_centers[0],
+        # 多个主跨(如 56+5x100+56)取最大墩间距;两个墩时就是墩间距
+        "main_span": max(b - a for a, b in zip(true_pier_centers, true_pier_centers[1:])),
         "pier_heights": pier_heights,
     }
 
