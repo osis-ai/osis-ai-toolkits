@@ -3,7 +3,7 @@
 
 osis-engine 官方脚本,不是用户自定义插件。无参时把用法打到 stderr 并返回 1。
 
-边跨 ΔL 由边跨现浇段吸收,中跨 ΔL 由合龙两侧恒高段吸收,合龙段 2m 与 T 构刚体平移。
+边跨 ΔL 由边跨现浇段里最靠近合龙段的等截面单元吸收(端部加厚段、过渡段、支座随梁端不动),中跨 ΔL 由合龙两侧恒高段吸收,合龙段 2m 与 T 构刚体平移。
 节段对数不同 / 非三跨 / 现浇或恒高段会被拉成负值时拒绝,换同构近邻。
 
 CLI:
@@ -83,6 +83,10 @@ class Landmarks:
     F: float
     G: float
     H: float
+    Ba: float  # 左边跨现浇段里吸收增量的单元(最靠近合龙段的等截面单元)的起点
+    Bb: float  # 该单元的终点
+    Gs: float  # 右侧同理:吸收增量单元的起点
+    Ga: float  # 终点
     deck_nos: list[int]
     pier_xs: list[float]
 
@@ -223,8 +227,14 @@ def parse_nodes(text: str) -> dict[int, Node]:
     return nodes
 
 
+ELEM_SECS: dict[int, tuple[int, int]] = {}  # 单元号 -> (I 端截面号, J 端截面号),parse_beams_and_groups 填
+SEC_RE = re.compile(r'engine\.element\.create\(\s*(\d+)\s*,\s*"BEAM3D"\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*(\d+)\s*,\s*(\d+)')
+
+
 def parse_beams_and_groups(text: str) -> tuple[dict[int, tuple[int, int]], dict[str, list[int]]]:
     beams: dict[int, tuple[int, int]] = {}
+    for m in SEC_RE.finditer(text):
+        ELEM_SECS[int(m.group(1))] = (int(m.group(2)), int(m.group(3)))
     for m in ELEM_RE.finditer(text):
         beams[int(m.group(1))] = (int(m.group(2)), int(m.group(3)))
     if not beams:
@@ -292,6 +302,17 @@ def _touch_other(
     return max(found) if side == "left" else min(found)
 
 
+def _absorber(beams, nodes, eids: list[int], near: float) -> tuple[float, float]:
+    """现浇段里离合龙段(x=near)最近的等截面单元(两端截面号相同)的 (起点 x, 终点 x);没有则报错。
+    渐变单元和端部加厚段不动,增量只加在它上面。"""
+    cands = [(min(abs(x - near) for x in _elem_xs(beams, nodes, [e])), e) for e in eids
+             if ELEM_SECS.get(e) and ELEM_SECS[e][0] == ELEM_SECS[e][1]]
+    if not cands:
+        raise RuntimeError("边跨现浇段里没有等截面单元可吸收增量,换近邻")
+    xs = _elem_xs(beams, nodes, [min(cands)[1]])
+    return min(xs), max(xs)
+
+
 def build_landmarks(
     nodes: dict[int, Node],
     beams: dict[int, tuple[int, int]],
@@ -324,9 +345,11 @@ def build_landmarks(
         raise RuntimeError("缺少单元组「中跨合龙段」")
 
     B = max(_elem_xs(beams, nodes, left_cip))
+    Ba, Bb = _absorber(beams, nodes, left_cip, near=B)
     C = max(_elem_xs(beams, nodes, left_cl))
     F = min(_elem_xs(beams, nodes, right_cl))
     G = max(_elem_xs(beams, nodes, right_cl))
+    Gs, Ga = _absorber(beams, nodes, right_cip, near=G)
     mid_xs = _elem_xs(beams, nodes, mid_cl)
     midL, midR = min(mid_xs), max(mid_xs)
     TLi = _touch_other(beams, nodes, midL, "left")
@@ -356,7 +379,7 @@ def build_landmarks(
     pier_xs = uniq
 
     return Landmarks(
-        A=A, B=B, C=C, TLi=TLi, midL=midL, midR=midR, TRi=TRi, F=F, G=G, H=H,
+        A=A, B=B, C=C, TLi=TLi, midL=midL, midR=midR, TRi=TRi, F=F, G=G, H=H, Ba=Ba, Bb=Bb, Gs=Gs, Ga=Ga,
         deck_nos=deck_nos,
         pier_xs=pier_xs,
     )
@@ -366,26 +389,28 @@ def build_span_map(lm: Landmarks, old: list[float], new: list[float]) -> SpanMap
     if len(old) != 3 or len(new) != 3:
         raise RuntimeError("spanremap 只支持悬浇三跨,请用 30+50+30 这种三个数字")
     d1, d2, d3 = new[0] - old[0], new[1] - old[1], new[2] - old[2]
-    left_cip = (lm.B - lm.A) + d1
-    right_cip = (lm.H - lm.G) + d3
+    left_cip = (lm.Bb - lm.Ba) + d1  # 只有这一个等截面单元吸收边跨增量,端部加厚段、过渡段、支座位置不动
+    right_cip = (lm.Ga - lm.Gs) + d3
     gap_l = (lm.midL - lm.TLi) + d2 / 2.0
     gap_r = (lm.TRi - lm.midR) + d2 / 2.0
     if left_cip < MIN_ZONE:
         raise RuntimeError(
-            f"左边跨现浇段会被拉到 {left_cip:.3f}m(<{MIN_ZONE}m),换更大边跨的近邻"
+            f"左边跨等截面段会被拉到 {left_cip:.3f}m(<{MIN_ZONE}m),换更大边跨的近邻"
         )
     if right_cip < MIN_ZONE:
         raise RuntimeError(
-            f"右边跨现浇段会被拉到 {right_cip:.3f}m(<{MIN_ZONE}m),换更大边跨的近邻"
+            f"右边跨等截面段会被拉到 {right_cip:.3f}m(<{MIN_ZONE}m),换更大边跨的近邻"
         )
     if gap_l < MIN_ZONE or gap_r < MIN_ZONE:
         raise RuntimeError(
             f"中跨恒高段会被拉到 {min(gap_l, gap_r):.3f}m(<{MIN_ZONE}m),换更大中跨的近邻"
         )
 
-    old_ks = [lm.A, lm.B, lm.C, lm.TLi, lm.midL, lm.midR, lm.TRi, lm.F, lm.G, lm.H]
+    old_ks = [lm.A, lm.Ba, lm.Bb, lm.B, lm.C, lm.TLi, lm.midL, lm.midR, lm.TRi, lm.F, lm.G, lm.Gs, lm.Ga, lm.H]
     new_ks = [
         lm.A,
+        lm.Ba,
+        lm.Bb + d1,
         lm.B + d1,
         lm.C + d1,
         lm.TLi + d1,
@@ -394,6 +419,8 @@ def build_span_map(lm: Landmarks, old: list[float], new: list[float]) -> SpanMap
         lm.TRi + d1 + d2,
         lm.F + d1 + d2,
         lm.G + d1 + d2,
+        lm.Gs + d1 + d2,
+        lm.Ga + d1 + d2 + d3,
         lm.H + d1 + d2 + d3,
     ]
     # 合并几乎重合的控制点,避免除零
