@@ -11,7 +11,7 @@ description: 把已有模型的跨中梁高 h_mid 改到用户指定值。只改
 
 | 用 | 不用(回 `osis-engine`) |
 |---|---|
-| 「跨中梁高改成 2.0m」「h_mid=2.4」 | 改根部梁高 `h_root`(另案) |
+| 「跨中梁高改成 2.0m」「h_mid=2.4」 | 改根部梁高 `h_root` |
 | 「把跨中截面高度调低」 | 改跨径、加节段、加钢束 |
 | 悬浇/刚构/现浇箱梁已有 `_4_section.py` | 从零建模 |
 
@@ -69,13 +69,7 @@ H_new = h_mid_new + (h_root - h_mid_new) * t
 
 ### 5. 写回
 
-在项目 `py/prep/` 下执行:
-
-```bash
-python main.py
-```
-
-无 traceback 即写回完成。
+跑 `<项目目录>/py/prep/main.py` 全量重建(执行方式见 `osis-engine` §写回)。无 traceback 即写回完成。
 
 ## 不要做的事
 

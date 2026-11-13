@@ -68,8 +68,14 @@ d.capture("tendon")                                   # 截图到 <项目目录>
 
 ## 关键坑(查签名看不出来的)
 
-- **大量命令包在 `with pyosis.batch():` 里**:块内命令缓冲、退出时一次发送,快得多;块内查询会先自动冲刷;OSIS 报错抛 `BatchError`,调试可在块末尾 `pyosis.flush(isolate=True)` 定位坏命令。
+- **大量命令包在 `with pyosis.batch():` 里**:块内命令只进本地缓冲,退出时一次发给 OSIS,快得多。
+  - 块内的查询(`get` / `all` / `count` / `solve` 等)会先冲刷缓冲再执行,结果是实时的,但会打断批量;建模段里不要穿插查询。
+  - 块内 Python 抛异常,还没发送的缓冲命令全部丢弃。
+  - OSIS 执行失败抛 `BatchError`(带 OSIS 原文,不指明是哪条)。调试时在块末尾加 `pyosis.flush(isolate=True)`,失败时二分列出出错命令;二分会重发已成功的命令,非幂等的 create 可能误报,定位后删掉这行。
 - **禁止 `engine.new_project`**——始终在已打开的项目里工作;保存用 `engine.save_project()`。
+- `engine.clear()` 清空整个模型,只出现在 `prep/main.py` 入口;其他地方要用先问用户。
+- `engine.model_summary()` 在部分 OSIS 版本上会在 `dynamic.count()` 抛"接口不通"(缺 `GetAllRespSpecInfo`);这时改用分项 `engine.node.count()` / `element.count()` / `material.count()` / `section.count()` / `load.count()` / `stage.count()`。
+- `engine.export_apdl(path)` 把前处理状态导出为 `.out`,`engine.import_apdl(path)` 读 `.out` / `.sml`。
 - PropertyManager 入口是 `engine.prop`,不是 `engine.property`。
 - `TendonPropManager.create_in` 位置序:name, mat, code, diameter, num, pipe, friction_coeff, deviation_coeff, …;便捷 `create` 是 name, s_type, mat, area 再接 create_in 余参。摩阻等系数的默认值是 1.0/0.0 占位,必须显式传。
 - 很多荷载/边界参数默认值不是 0(如 `create_gravity` 的 `x_coeff`/`y_coeff` 默认 1.0、`create_spring` 刚度默认 10),用到的参数全部显式传。
