@@ -25,7 +25,7 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 | 生成计算书 | `osis-calcbook` |
 | pyosis 用法要点与坑(签名用 MCP `api_glob`/`api_grep`/`api_read` 查) | `osis-python-helper` |
 | 改跨中梁高 / h_mid | `osis-edit-hmid` |
-| 建模完成后构造正确性自动评测 | `osis-auto-testconformance` |
+| 建模完成后自动评测:构造评分 + 受力评分 | `osis-auto-testconformance` |
 | 自定义插件、用户/官方 skill、模型入库 | `osis-customize-osisai` |
 
 ## 会话硬约束
@@ -38,7 +38,7 @@ description: OSIS 桥梁建模的总控入口。判断任务类型、按受力�
 - **只动 `py/`**:不创建/修改/删除 `image/` `Check/` `Result/` `secmesh/` 等 OSIS 自动目录
 - **改模型必改画像**:同步更新 `项目画像.md`,字段缺失留 `<!-- TODO -->`
 - **组名逐字一致**:`_6` 组名被 `_8`/`_9`/`_10` 引用,差字符报"组不存在"
-- **构造评测**:完整建模(含直接复制/小修)完成后自动调 `osis-auto-testconformance`,总分/评级/偏差项写入完工报告,是否按偏差调整由用户定。"越快越好"不压缩评测
+- **建模评测**:完整建模(含直接复制/小修)完成后自动调 `osis-auto-testconformance`:先出构造评分,接着出受力评分(快速档)。两套分各自的总分/评级/偏差项写入完工报告,是否按偏差调整由用户定。"越快越好"不压缩评测
 
 ## 接到任务后,先做这些
 
